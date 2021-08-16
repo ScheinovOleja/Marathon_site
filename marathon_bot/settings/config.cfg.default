@@ -1,0 +1,9 @@
+[bot]
+API_TOKEN = your_token
+
+[database]
+database =
+user =
+password =
+host = localhost
+port = 5432

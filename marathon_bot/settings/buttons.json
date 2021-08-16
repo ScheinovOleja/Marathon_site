@@ -1,0 +1,21 @@
+{
+  "main_menu_tasks": "\uD83D\uDCBC Задания",
+  "main_menu_user_info": "\uD83E\uDDCD\uD83C\uDFFC\u200D♀️ Моя информация",
+  "main_menu_kcal": "Расчет КБЖУ и Меню",
+  "main_menu_get_scopes": "\uD83C\uDF53 Получить вкусняшки (баллы) за задание",
+  "main_menu_buy_product": "⚡️ Товары за вкусняшки (баллы)",
+  "main_menu_marathon_edit": "Сменить марафон",
+  "back": "⬅️ Назад",
+  "to_main_menu": "\uD83C\uDFE0 В главное меню",
+  "measurement_marathon_start": "\uD83D\uDCC8 Мои замеры на текущий марафон",
+  "photos_marathon_start": "\uD83E\uDD33\uD83C\uDFFC Мои фотографии на текущий марафон",
+  "stats_all": "\uD83C\uDFC6 Статистика по вкусняшкам (баллам)",
+  "photo_front_before": "1️⃣ Фото спереди ДО",
+  "photo_sideways_before": "2️⃣ Фото сбоку ДО",
+  "photo_back_before": "3️⃣ Фото сзади ДО",
+  "photo_front_after": "1️⃣ Фото спереди ПОСЛЕ",
+  "photo_sideways_after": "2️⃣ Фото сбоку ПОСЛЕ",
+  "photo_back_after": "3️⃣ Фото сзади ПОСЛЕ",
+  "add_before": "\uD83D\uDCCF Замеры ДО",
+  "add_after": "\uD83D\uDCD0 Замеры ПОСЛЕ"
+}
