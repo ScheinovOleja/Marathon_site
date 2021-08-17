@@ -2,20 +2,22 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from pony.orm import db_session
 
+from marathon_bot.general_func import send_photo
 from marathon_bot.handlers.main_menu_handler import main_menu, back
-from marathon_bot.models import CategoryTrainingMenu, TrainingInfo
+from marathon_bot.models import CategoryTrainingMenu, TrainingInfo, Marathon
 from marathon_bot.states.all_states_menu import TrainingMenu
 
 
 @db_session
-async def send_category_training(query: types.CallbackQuery):
-    categories = CategoryTrainingMenu.select()[:]
+async def send_category_training(query: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    marathon = await Marathon.get_marathon(marathon_id=data['marathon_id'])
     markup = types.InlineKeyboardMarkup()
     text = 'Выберите категорию меню:'
-    if not categories:
+    if not marathon.category_training_menu:
         text = 'К сожалению, на данный момент еще нет ни одной категории!'
     else:
-        for category in categories:
+        for category in marathon.category_training_menu:
             markup.add(types.InlineKeyboardButton(text=f'{category.category}', callback_data=f'Training_{category.id}'))
     markup.add(back, main_menu)
     await TrainingMenu.first()
@@ -46,14 +48,8 @@ async def send_menu_info(query: types.CallbackQuery, state: FSMContext):
     text = f'{menu.name}\n\n' \
            f'{menu.description}\n\n'
     markup.add(back, main_menu)
-    await TrainingMenu.last()
     if menu.photo:
-        try:
-            await query.message.answer_photo(photo=open(f'{menu.photo}', 'rb'), caption=text,
-                                             reply_markup=markup)
-            await query.message.delete()
-            return
-        except Exception as exc:
-            await query.message.edit_text(text, reply_markup=markup)
-            return
-    await query.message.edit_text(text, reply_markup=markup)
+        await send_photo(query, text, markup, menu.photo)
+    else:
+        await query.message.edit_text(text, reply_markup=markup)
+    await TrainingMenu.last()

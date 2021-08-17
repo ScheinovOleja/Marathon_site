@@ -28,7 +28,7 @@ async def treatment_calculate_kcal(message: types.Message, state: FSMContext, te
                                    markup=None):
     state_data = await state.get_data()
     try:
-        await state.update_data({dict_key: float(message.text)})
+        await state.update_data({dict_key: int(message.text)})
     except ValueError:
         await message.delete()
         if state_data['msg']['text'] == failure_text:
@@ -142,9 +142,9 @@ async def successfully(query: types.CallbackQuery, state: FSMContext):
                 commit()
                 user.bzu = bzu
             else:
-                user.bzu.proteins = int(round(kcal * 0.0625))
-                user.bzu.fats = int(round(kcal * 0.03333))
-                user.bzu.carbohydrates = int(round(kcal * 0.1125))
+                user.bzu.proteins = round(kcal * 0.0625)
+                user.bzu.fats = round(kcal * 0.03333)
+                user.bzu.carbohydrates = round(kcal * 0.1125)
             commit()
             text += f'<pre>' \
                     f'Белки - {user.bzu.proteins} гр\n' \

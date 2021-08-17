@@ -182,7 +182,8 @@ async def get_photo_from_db(query: types.CallbackQuery, state: FSMContext):
     text = "Вы здесь очень красивый(ая)!"
     with db_session:
         user = await Users.get_user(tg_id=query.from_user.id, marathon_id=state_data['marathon_id'])
-        photo = getattr(user.photos, states.get(query.data.split("post:get:")[1].split("_get")[0]))
+        photo_from_db = getattr(user.photos, states.get(query.data.split("post:get:")[1].split("_get")[0]))
+        photo = open(MEDIA_ROOT + "users_photo/" + photo_from_db, 'rb')
         markup.add(back, main_menu)
         msg = await query.message.answer_photo(photo, caption=text, reply_markup=markup)
     await query.message.delete()
@@ -194,12 +195,15 @@ async def get_photo_from_db(query: types.CallbackQuery, state: FSMContext):
 async def send_menu_wait_photo_from_user(query: types.CallbackQuery, state: FSMContext):
     markup = types.InlineKeyboardMarkup(row_width=2)
     text = "Вы должны сделать такую же фотографию"
+    markup.add(back, main_menu)
     with db_session:
-        photo_from_db = PhotoStates.get(category_photo=f'{query.data.split("post:add:")[1].split("_")[1]}')
-        photo = open(MEDIA_ROOT + photo_from_db.photo, 'rb')
-        markup.add(back, main_menu)
-        msg = await query.message.answer_photo(photo, caption=text, reply_markup=markup)
-    await query.message.delete()
+        try:
+            photo_from_db = PhotoStates.get(category_photo=f'{query.data.split("post:add:")[1].split("_")[1]}')
+            photo = open(MEDIA_ROOT + photo_from_db.photo, 'rb')
+            msg = await query.message.answer_photo(photo, caption=text, reply_markup=markup)
+            await query.message.delete()
+        except AttributeError:
+            msg = await query.message.edit_text(text, reply_markup=markup)
     await state.update_data({'msg': msg.to_python(),
                              'callback': query.data.split("post:add:")[1].split("add_")[1]})
     await Photos.add_photo.set()

@@ -12,9 +12,9 @@ async def back_to_kcal_welcome(query: types.CallbackQuery, state: FSMContext):
     return await send_menu_kcal_welcome(query, state)
 
 
-async def back_to_send_category(query: types.CallbackQuery):
+async def back_to_send_category(query: types.CallbackQuery, state: FSMContext):
     await ReadyMadeMenuState.previous()
-    return await send_category_ready_made_menu(query)
+    return await send_category_ready_made_menu(query, state)
 
 
 async def back_to_all_day(query: types.CallbackQuery, state: FSMContext):
@@ -33,6 +33,3 @@ async def back_to_menu_list(query: types.CallbackQuery, state: FSMContext):
     await ReadyMadeMenuState.previous()
     await ReadyMadeMenuState.previous()
     return await send_ready_made_menu_list(query, state)
-
-
-

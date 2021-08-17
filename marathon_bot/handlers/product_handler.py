@@ -9,19 +9,23 @@ from marathon_bot.states.all_states_menu import ProductsMenu
 
 
 @db_session
-async def send_products(query: CallbackQuery):
+async def send_products(query: CallbackQuery, state: FSMContext):
     markup = InlineKeyboardMarkup()
-    all_product = Product.select()[:]
+    data = await state.get_data()
+    all_product = Product.select().where(marathon=data['marathon_id'])[:]
+    text = 'Выберите товар:'
+    if not all_product:
+        text = 'Извините, но на данный момент нет ни одного приза'
     for product in all_product:
         markup.add(InlineKeyboardButton(text=f'{product.name}', callback_data=f'Product_{product.id}'))
     markup.add(main_menu)
     await ProductsMenu.first()
-    await query.message.edit_text('Выберите товар:', reply_markup=markup)
+    await query.message.edit_text(text, reply_markup=markup)
 
 
-async def back_to_send_products(query: CallbackQuery):
+async def back_to_send_products(query: CallbackQuery, state: FSMContext):
     await ProductsMenu.previous()
-    return await send_products(query)
+    return await send_products(query, state)
 
 
 @db_session

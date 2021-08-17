@@ -2,20 +2,23 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from pony.orm import db_session
 
+from marathon_bot import MEDIA_ROOT
+from marathon_bot.general_func import send_photo
 from marathon_bot.handlers.main_menu_handler import main_menu, back
-from marathon_bot.models import CategoryTasks, Users, Tasks
+from marathon_bot.models import Users, Tasks, Marathon
 from marathon_bot.states.all_states_menu import TaskMenu
 
 
 @db_session
-async def send_category_tasks(query: types.CallbackQuery):
-    categories = CategoryTasks.select()[:]
+async def send_category_tasks(query: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    marathon = await Marathon.get_marathon(marathon_id=data['marathon_id'])
     markup = types.InlineKeyboardMarkup()
     text = 'Выберите категорию:'
-    if not categories:
+    if not marathon.category_task:
         text = 'К сожалению, на данный момент еще нет ни одной категории!'
     else:
-        for category in categories:
+        for category in marathon.category_task:
             markup.add(types.InlineKeyboardButton(text=f'{category.category}', callback_data=f'Category_{category.id}'))
     markup.add(main_menu)
     await TaskMenu.first()
@@ -51,13 +54,7 @@ async def send_task_info(query: types.CallbackQuery, state: FSMContext):
            f'{task.description}\n\n'
     markup.add(back, main_menu)
     if task.image:
-        try:
-            await query.message.answer_photo(photo=open(f'{task.image.file.name}', 'rb'), caption=text,
-                                             reply_markup=markup)
-            await query.message.delete()
-            return
-        except Exception as exc:
-            await query.message.edit_text(text, reply_markup=markup)
-            return
+        await send_photo(query, text, markup, task.image)
+    else:
+        await query.message.edit_text(text, reply_markup=markup)
     await TaskMenu.next()
-    await query.message.edit_text(text, reply_markup=markup)

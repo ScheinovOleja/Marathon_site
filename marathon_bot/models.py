@@ -35,13 +35,13 @@ class Measurement(db.Entity):
 class Photo(db.Entity):
     _table_ = 'photo'
     id = PrimaryKey(int, auto=True)
-    photo_front_before = Optional(bytes, nullable=True, default=b'')
-    photo_sideways_before = Optional(bytes, nullable=True, default=b'')
-    photo_back_before = Optional(bytes, nullable=True, default=b'')
+    photo_front_before = Optional(str, nullable=True, default='')
+    photo_sideways_before = Optional(str, nullable=True, default='')
+    photo_back_before = Optional(str, nullable=True, default='')
     # --------------------------------------------------------
-    photo_front_after = Optional(bytes, nullable=True, default=b'')
-    photo_sideways_after = Optional(bytes, nullable=True, default=b'')
-    photo_back_after = Optional(bytes, nullable=True, default=b'')
+    photo_front_after = Optional(str, nullable=True, default='')
+    photo_sideways_after = Optional(str, nullable=True, default='')
+    photo_back_after = Optional(str, nullable=True, default='')
     user = Optional("Users")
 
     @staticmethod
@@ -53,6 +53,7 @@ class CategoryTasks(db.Entity):
     _table_ = 'category_tasks'
     id = PrimaryKey(int, auto=True)
     category = Required(str, index=True)
+    marathon = Set("Marathon", reverse='category_task', column='marathon_id')
     tasks = Optional('Tasks')
 
 
@@ -92,10 +93,15 @@ class Marathon(db.Entity):
     send_measurements_before = Optional(bool, sql_default=False)
     send_measurements_after = Optional(bool, sql_default=False)
     close = Optional(bool, sql_default=False)
-    price = Optional(float, sql_default=0.0)
+    price = Optional(int, sql_default=0)
+    category_task = Set(CategoryTasks, nullable=True, reverse='marathon', column='category_id')
     tasks = Optional(Tasks, nullable=True, cascade_delete=True)
     product = Optional(Product, nullable=True, cascade_delete=True)
     user = Optional("Users", reverse='marathon')
+    kcal_category_ready_made = Set('KcalCategoryReadyMadeMenu', nullable=True, reverse='marathon',
+                                   column='category_id')
+    category_training_menu = Set('CategoryTrainingMenu', nullable=True, reverse='marathon',
+                                 column='category_id')
 
     @staticmethod
     async def get_marathon(marathon_id):
@@ -163,6 +169,7 @@ class KcalCategoryReadyMadeMenu(db.Entity):
     id = PrimaryKey(int, auto=True)
     kcal_category = Required(str)
     day = Set("DayReadyMadeMenu")
+    marathon = Set(Marathon, nullable=True, reverse='kcal_category_ready_made', column='marathon_id')
 
 
 class DayReadyMadeMenu(db.Entity):
@@ -199,6 +206,7 @@ class CategoryTrainingMenu(db.Entity):
     id = PrimaryKey(int, auto=True)
     category = Required(str, nullable=False)
     recipes = Optional('TrainingInfo')
+    marathon = Set(Marathon, nullable=True, reverse='category_training_menu', column='marathon_id')
 
 
 class TrainingInfo(db.Entity):

@@ -8,6 +8,15 @@ class CategoryTasks(models.Model):
         db_table = 'category_tasks'
 
 
+class CategoryTasksMarathon(models.Model):
+    category = models.OneToOneField(CategoryTasks, models.DO_NOTHING)
+    marathon = models.ForeignKey('Marathon', models.DO_NOTHING)
+
+    class Meta:
+        db_table = 'categorytasks_marathon'
+        unique_together = (('category', 'marathon'),)
+
+
 class Marathon(models.Model):
     name = models.CharField(max_length=50, verbose_name='Название марафона')
     description = models.TextField(verbose_name='Описание марафона')
@@ -16,7 +25,7 @@ class Marathon(models.Model):
     send_measurements_before = models.BooleanField(default=False, verbose_name='Отправка замеров ДО')
     send_measurements_after = models.BooleanField(default=False, verbose_name='Отправка замеров ПОСЛЕ')
     close = models.BooleanField(default=False, verbose_name='Закрыт ли марафон')
-    price = models.FloatField(default=0.0, verbose_name="Стоимость марафона")
+    price = models.IntegerField(default=0, verbose_name="Стоимость марафона")
 
     class Meta:
         db_table = 'marathon'
@@ -37,12 +46,18 @@ class Measurement(models.Model):
 
 
 class Photo(models.Model):
-    photo_front_before = models.BinaryField(blank=True, null=True, verbose_name='Отправка фото спереди ДО')
-    photo_sideways_before = models.BinaryField(blank=True, null=True, verbose_name='Отправка фото сбоку ДО')
-    photo_back_before = models.BinaryField(blank=True, null=True, verbose_name='Отправка фото сзади ДО')
-    photo_front_after = models.BinaryField(blank=True, null=True, verbose_name='Отправка фото спереди ПОСЛЕ')
-    photo_sideways_after = models.BinaryField(blank=True, null=True, verbose_name='Отправка фото сбоку ПОСЛЕ')
-    photo_back_after = models.BinaryField(blank=True, null=True, verbose_name='Отправка фото сзади ПОСЛЕ')
+    photo_front_before = models.ImageField(upload_to="users_photo/", blank=True, null=True,
+                                           verbose_name='Отправка фото спереди ДО')
+    photo_sideways_before = models.ImageField(upload_to="users_photo/", blank=True, null=True,
+                                              verbose_name='Отправка фото сбоку ДО')
+    photo_back_before = models.ImageField(upload_to="users_photo/", blank=True, null=True,
+                                          verbose_name='Отправка фото сзади ДО')
+    photo_front_after = models.ImageField(upload_to="users_photo/", blank=True, null=True,
+                                          verbose_name='Отправка фото спереди ПОСЛЕ')
+    photo_sideways_after = models.ImageField(upload_to="users_photo/", blank=True, null=True,
+                                             verbose_name='Отправка фото сбоку ПОСЛЕ')
+    photo_back_after = models.ImageField(upload_to="users_photo/", blank=True, null=True,
+                                         verbose_name='Отправка фото сзади ПОСЛЕ')
 
     class Meta:
         db_table = 'photo'
@@ -114,7 +129,7 @@ class CodesUsers(models.Model):
     users = models.ForeignKey('Users', models.DO_NOTHING)
 
     class Meta:
-        db_table = 'codes_user'
+        db_table = 'codes_users'
         unique_together = (('codes', 'users'),)
 
 
@@ -164,6 +179,15 @@ class KcalCategoryReadyMadeMenu(models.Model):
         db_table = 'kcal_category_ready_made'
 
 
+class KcalCategoryReadyMadeMenuMarathon(models.Model):
+    category = models.OneToOneField(KcalCategoryReadyMadeMenu, models.DO_NOTHING)
+    marathon = models.ForeignKey('Marathon', models.DO_NOTHING)
+
+    class Meta:
+        db_table = 'kcalcategoryreadymademenu_marathon'
+        unique_together = (('category', 'marathon'),)
+
+
 class ReadyMadeMenu(models.Model):
     name_menu = models.TextField()
     description = models.TextField()
@@ -187,6 +211,15 @@ class CategoryTrainingMenu(models.Model):
 
     class Meta:
         db_table = 'category_training'
+
+
+class CategoryTrainingMenuMarathon(models.Model):
+    category = models.OneToOneField(CategoryTrainingMenu, models.DO_NOTHING)
+    marathon = models.ForeignKey('Marathon', models.DO_NOTHING)
+
+    class Meta:
+        db_table = 'categorytrainingmenu_marathon'
+        unique_together = (('category', 'marathon'),)
 
 
 class TrainingInfo(models.Model):

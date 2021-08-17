@@ -2,20 +2,23 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from pony.orm import db_session
 
+from marathon_bot.general_func import send_photo
 from marathon_bot.handlers.main_menu_handler import main_menu, back
-from marathon_bot.models import KcalCategoryReadyMadeMenu, DayReadyMadeMenu, TimeDayReadyMadeMenu, ReadyMadeMenu
+from marathon_bot.models import KcalCategoryReadyMadeMenu, DayReadyMadeMenu, TimeDayReadyMadeMenu, ReadyMadeMenu, \
+    Marathon
 from marathon_bot.states.all_states_menu import ReadyMadeMenuState
 
 
 @db_session
-async def send_category_ready_made_menu(query: types.CallbackQuery):
-    categories_kcal = KcalCategoryReadyMadeMenu.select()[:]
+async def send_category_ready_made_menu(query: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    marathon = await Marathon.get_marathon(marathon_id=data['marathon_id'])
     markup = types.InlineKeyboardMarkup()
     text = 'Выберите количество калорий:'
-    if not categories_kcal:
+    if not marathon.kcal_category_ready_made:
         text = 'К сожалению, на данный момент еще нет ни одной категории!'
     else:
-        for category in categories_kcal:
+        for category in marathon.kcal_category_ready_made:
             markup.add(types.InlineKeyboardButton(text=f'{category.kcal_category}',
                                                   callback_data=f'Kcal_{category.id}'))
     markup.add(back, main_menu)
@@ -83,13 +86,7 @@ async def send_info_by_ready_made_menu(query: types.CallbackQuery):
            f"{ready_made.description}\n\n"
     markup.add(back, main_menu)
     if ready_made.photo:
-        try:
-            await query.message.answer_photo(photo=open(f'{ready_made.photo.file.name}', 'rb'), caption=text,
-                                             reply_markup=markup)
-            await query.message.delete()
-            return
-        except Exception as exc:
-            await query.message.edit_text(text, reply_markup=markup)
-            return
+        await send_photo(query, text, markup, ready_made.photo)
+    else:
+        await query.message.edit_text(text, reply_markup=markup)
     await ReadyMadeMenuState.last()
-    await query.message.edit_text(text, reply_markup=markup)
