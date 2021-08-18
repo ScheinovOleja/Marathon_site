@@ -17,21 +17,24 @@ async def add_photo_to_db(message: types.Message, state: FSMContext):
     file_path = MEDIA_ROOT + 'users_photo'
     if not os.path.isdir(file_path):
         os.mkdir(file_path)
-    if not os.path.isdir(file_path + f'/{message.chat.id}'):
-        os.mkdir(file_path + f'/{message.chat.id}')
+    if not os.path.isdir(file_path + f'/{message.chat.id}/{state_data["marathon_id"]}'):
+        os.mkdir(file_path + f'/{message.chat.id}/{state_data["marathon_id"]}')
     if message.content_type == 'document':
         name_file = message.document.file_unique_id
         state_file = state_data['callback']
-        file = await message.document.download(f'{file_path}/{message.chat.id}/{name_file}_{state_file}.jpg')
+        file = await message.document.download(f'{file_path}/{message.chat.id}/{state_data["marathon_id"]}/'
+                                               f'{name_file}_{state_file}.jpg')
     elif message.content_type == 'photo':
         try:
             name_file = message.photo[-1].file_unique_id
             state_file = state_data['callback']
-            file = await message.photo[-1].download(f'{file_path}/{message.chat.id}/{name_file}_{state_file}.jpg')
+            file = await message.photo[-1].download(f'{file_path}/{message.chat.id}/{state_data["marathon_id"]}/'
+                                                    f'{name_file}_{state_file}.jpg')
         except Exception as exc:
             name_file = message.photo[-2].file_unique_id
             state_file = state_data['callback']
-            file = await message.photo[-2].download(f'{file_path}/{message.chat.id}/{name_file}_{state_file}.jpg')
+            file = await message.photo[-2].download(f'{file_path}/{message.chat.id}/{state_data["marathon_id"]}/'
+                                                    f'{name_file}_{state_file}.jpg')
     else:
         return
     with db_session:
@@ -49,4 +52,3 @@ async def add_photo_to_db(message: types.Message, state: FSMContext):
     await bot.delete_message(state_data['msg']['chat']['id'], state_data['msg']["message_id"])
     await message.answer('Спасибо! Вы очень красивы!',
                          reply_markup=markup)
-    # await state.set_data({'marathon_id': state_data['marathon_id']})

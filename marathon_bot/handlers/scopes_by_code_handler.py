@@ -21,7 +21,7 @@ async def get_code(message: types.Message, state: FSMContext):
     markup = types.InlineKeyboardMarkup().add(main_menu)
     state_data = await state.get_data()
     with db_session:
-        code = Codes.get(code=message.text.lower())
+        code = Codes.get(code=message.text.lower(), marathon=state_data['marathon_id'])
         if code is not None:
             user = await Users.get_user(tg_id=message.from_user.id, marathon_id=state_data['marathon_id'])
             if any([code.id == entered.id for entered in user.entered_codes]):

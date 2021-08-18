@@ -64,10 +64,9 @@ class Tasks(db.Entity):
     category = Required(CategoryTasks, nullable=False, column='category_id')
     description = Required(str, nullable=False)
     count_scopes = Required(int, nullable=False)
-    url = Optional(str, nullable=True)
     image = Optional(str, nullable=True)
-    unique_key = Optional(str, nullable=False)
-    marathon = Required("Marathon", reverse='tasks', column='marathon_id')
+    date_start = Required(datetime.datetime, nullable=False)
+    date_stop = Required(datetime.datetime, nullable=False)
     user = Set("Users", column='users_id', reverse='completed_tasks')
 
 
@@ -77,8 +76,6 @@ class Product(db.Entity):
     name = Required(str, index=True, nullable=False)
     description = Required(str, nullable=False)
     image = Optional(str, nullable=True)
-    price = Required(int, nullable=False)
-    unique_code = Required(str, nullable=False, unique=True)
     marathon = Required("Marathon", reverse='product', column='marathon_id')
     user = Set("Users", reverse='purchased_products', column='users_id')
 
@@ -95,13 +92,13 @@ class Marathon(db.Entity):
     close = Optional(bool, sql_default=False)
     price = Optional(int, sql_default=0)
     category_task = Set(CategoryTasks, nullable=True, reverse='marathon', column='category_id')
-    tasks = Optional(Tasks, nullable=True, cascade_delete=True)
     product = Optional(Product, nullable=True, cascade_delete=True)
     user = Optional("Users", reverse='marathon')
     kcal_category_ready_made = Set('KcalCategoryReadyMadeMenu', nullable=True, reverse='marathon',
                                    column='category_id')
     category_training_menu = Set('CategoryTrainingMenu', nullable=True, reverse='marathon',
                                  column='category_id')
+    codes = Optional('Codes', nullable=True, cascade_delete=True)
 
     @staticmethod
     async def get_marathon(marathon_id):
@@ -124,6 +121,7 @@ class Codes(db.Entity):
     id = PrimaryKey(int, auto=True)
     code = Required(str, nullable=False, index=True)
     scopes = Required(int, nullable=False)
+    marathon = Required(Marathon, nullable=False, column='marathon_id', reverse='codes')
     user = Set("Users", column='users_id', reverse='entered_codes')
 
 

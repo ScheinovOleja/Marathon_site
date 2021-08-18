@@ -1,8 +1,10 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup, CallbackQuery, InlineKeyboardButton
+from aiogram.utils.exceptions import BadRequest
 from pony.orm import db_session
 
 from marathon_bot import MEDIA_ROOT
+from marathon_bot.general_func import send_photo
 from marathon_bot.handlers.main_menu_handler import main_menu, back
 from marathon_bot.models import Product
 from marathon_bot.states.all_states_menu import ProductsMenu
@@ -20,7 +22,11 @@ async def send_products(query: CallbackQuery, state: FSMContext):
         markup.add(InlineKeyboardButton(text=f'{product.name}', callback_data=f'Product_{product.id}'))
     markup.add(main_menu)
     await ProductsMenu.first()
-    await query.message.edit_text(text, reply_markup=markup)
+    try:
+        await query.message.edit_text(text, reply_markup=markup)
+    except BadRequest:
+        await query.message.delete()
+        await query.message.answer(text, reply_markup=markup)
 
 
 async def back_to_send_products(query: CallbackQuery, state: FSMContext):
@@ -37,13 +43,8 @@ async def send_product_info(query: CallbackQuery, state: FSMContext):
            f'{product.description}\n\n'
     markup.add(back, main_menu)
     if product.image:
-        try:
-            photo = open(MEDIA_ROOT + product.image, 'rb')
-            await query.message.answer_photo(photo=photo, caption=text, reply_markup=markup)
-            await query.message.delete()
-            return
-        except Exception as exc:
-            await query.message.edit_text(text, reply_markup=markup)
-            return
+        await send_photo(query, text, markup, product.image)
+    else:
+        await query.message.edit_text(text, reply_markup=markup)
     await ProductsMenu.next()
-    await query.message.edit_text(text, reply_markup=markup)
+

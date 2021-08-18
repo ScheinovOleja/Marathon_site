@@ -1,8 +1,10 @@
+import datetime
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.exceptions import BadRequest
 from pony.orm import db_session
 
-from marathon_bot import MEDIA_ROOT
 from marathon_bot.general_func import send_photo
 from marathon_bot.handlers.main_menu_handler import main_menu, back
 from marathon_bot.models import Users, Tasks, Marathon
@@ -40,10 +42,15 @@ async def send_tasks(query: types.CallbackQuery, state: FSMContext):
         if any([task.id == complete.id for complete in completed_task.completed_tasks]):
             continue
         else:
-            markup.add(types.InlineKeyboardButton(text=f'{task.name}', callback_data=f'Task_{task.id}'))
+            if task.date_start < datetime.datetime.now(task.date_start.tzinfo) < task.date_stop:
+                markup.add(types.InlineKeyboardButton(text=f'{task.name}', callback_data=f'Task_{task.id}'))
     markup.add(back, main_menu)
     await TaskMenu.next()
-    await query.message.edit_text('Выберите задание:', reply_markup=markup)
+    try:
+        await query.message.edit_text('Выберите задание:', reply_markup=markup)
+    except BadRequest:
+        await query.message.delete()
+        await query.message.answer('Выберите задание:', reply_markup=markup)
 
 
 @db_session
@@ -51,7 +58,8 @@ async def send_task_info(query: types.CallbackQuery, state: FSMContext):
     markup = types.InlineKeyboardMarkup()
     task = Tasks.get(id=query.data.split('_')[1])
     text = f'{task.name}\n\n' \
-           f'{task.description}\n\n'
+           f'{task.description}\n\n' \
+           f'Дата-время закрытия задания - {task.date_stop.strftime("%d-%m-%Y - %H:%M:%S")}'
     markup.add(back, main_menu)
     if task.image:
         await send_photo(query, text, markup, task.image)

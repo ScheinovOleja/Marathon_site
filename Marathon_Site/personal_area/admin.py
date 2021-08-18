@@ -1,39 +1,31 @@
 import csv
-import datetime
 import logging
 import os
 from pathlib import Path
+
 from django.contrib import admin
-from django.shortcuts import redirect
+from django.contrib.admin import AdminSite
+from django.core.files import File
+from django.forms import TextInput, Textarea
+from django.http import HttpResponse
 from django.utils.safestring import mark_safe
+
 from .models import *
 
 
 # Register your models here.
 
 
-@admin.register(Users)
-class CustomUserAdmin(admin.ModelAdmin):
+class UsersAdmin(admin.ModelAdmin):
     model = Users
     actions = ['import_csv']
-    list_filter = ['sex', 'marathon']
-    list_display = ['tg_id', 'username', 'first_name', 'last_name', ]
-    fields = ['username', 'first_name', 'last_name', 'sex', 'scopes',
-              'complete_task', 'purchased_products', 'get_measurement', 'get_photo']
-    readonly_fields = ['get_photo', 'get_measurement', 'complete_task',
-                       'purchased_products']
-
-    def delete_queryset(self, request, queryset):
-        for user in queryset:
-            try:
-                Photo.objects.get(tg_id=user.tg_id).delete()
-            except Exception as exc:
-                logging.error(exc)
-            try:
-                Measurement.objects.get(tg_id=user.tg_id).delete()
-            except Exception as exc:
-                logging.error(exc)
-            user.delete()
+    search_fields = ['username', 'first_name', 'last_name']
+    list_filter = ['sex', 'marathon__name']
+    list_display = ['tg_id', 'username', 'first_name', 'last_name', 'marathon']
+    fields = ['username', ('first_name', 'last_name'), 'sex', 'scopes', 'marathon', ('complete_task', 'get_photo',
+                                                                                     'get_measurement', 'get_bzu')]
+    readonly_fields = ['complete_task', 'get_photo', 'get_measurement', 'get_bzu', 'marathon', 'sex', 'username']
+    list_display_links = ['tg_id', 'marathon']
 
     def import_csv(self, request, queryset):
         try:
@@ -45,44 +37,29 @@ class CustomUserAdmin(admin.ModelAdmin):
                          'Талия ДО', 'Бедра ДО', 'Вес ДО', 'Грудь ПОСЛЕ', 'Талия ПОСЛЕ', 'Бедра ПОСЛЕ', 'Вес ПОСЛЕ']]
                 for user in queryset:
                     writer = csv.writer(csv_file, delimiter=';')
-                    measurement = Measurement.objects.get_or_none(tg_id=user.tg_id)
-                    if not measurement:
+                    if not user.measurement:
                         continue
-                    today = datetime.date.today()
-                    age = today.year - user.birthday.year - (
-                            (today.month, today.day) < (user.birthday.month, user.birthday.day)
-                    )
-                    data.append([user.tg_id, user.tg_nickname, user.name, user.surname, age, user.sex, user.scopes,
-                                 measurement.waist_before, measurement.breast_before, measurement.femur_before,
-                                 measurement.weight_before, measurement.waist_after, measurement.breast_after,
-                                 measurement.femur_after, measurement.weight_after])
+                    data.append([user.tg_id, user.username, user.first_name, user.last_name, user.age, user.sex,
+                                 user.scopes, user.measurement.waist_before, user.measurement.breast_before,
+                                 user.measurement.femur_before, user.measurement.weight_before,
+                                 user.measurement.waist_after, user.measurement.breast_after,
+                                 user.measurement.femur_after, user.measurement.weight_after])
                 for row in data:
                     writer.writerow(row)
-                return redirect('/media/csv_files/file_csv.csv')
+            f = open(f'{file_path}/file_csv.csv', 'r', encoding='utf-8')
+            my_file = File(f)
+            response = HttpResponse(my_file)
+            response['Content-Disposition'] = 'attachment; filename=' + 'file_csv.csv'
+            return response
         except Exception as exc:
             logging.error(exc)
 
     def complete_task(self, request):
-        complete_task = Users.objects.filter(tg_id=request.tg_id).values_list('completed_tasks')
+        complete_task = TasksUsers.objects.filter(users_id=request.id)
         text_url = ''
-        for task in Tasks.objects.all():
-            if any([task.id in complete for complete in complete_task]):
-                text_url += f'<li><b><a href="/admin/marathon/tasks/{task.id}/change/" target="_blank">{task.name}' \
-                            f'</a></b></li>\n'
-        url = f"""
-                <ul>
-                    {text_url}
-                </ul>
-                """
-        return mark_safe(url)
-
-    def purchased_products(self, request):
-        complete_task = Users.objects.filter(tg_id=request.tg_id).values_list('purchased_goods')
-        text_url = ''
-        for product in Product.objects.all():
-            if any([product.id in complete for complete in complete_task]):
-                text_url += f'<li><b><a href="/admin/marathon/product/{product.id}/change/" target="_blank">{product.name}' \
-                            f'</a></b></li>\n'
+        for task in complete_task:
+            text_url += f'<li><b><a href="/admin/personal_area/tasks/{task.id}/change/" target="_blank">' \
+                        f'{task.tasks.name}</a></b></li>\n'
         url = f"""
                 <ul>
                     {text_url}
@@ -91,58 +68,47 @@ class CustomUserAdmin(admin.ModelAdmin):
         return mark_safe(url)
 
     def get_photo(self, request):
-        url = f'<b><a href="/admin/marathon/photo/{request.photos.id}/change/" target="_blank">Тык сюды</a></b>'
+        url = f'<b><a href="/admin/personal_area/photo/{request.photos.id}/change/" target="_blank">Тык сюды</a></b>'
         return mark_safe(url)
 
     def get_measurement(self, request):
-        url = f'<b><a href="/admin/marathon/measurement/{request.measurement.id}/change/" target="_blank">Тык сюды</a>' \
-              f'</b>'
+        url = f'<b><a href="/admin/personal_area/measurement/{request.measurement.id}/change/" target="_blank">' \
+              f'Тык сюды</a></b>'
+        return mark_safe(url)
+
+    def get_bzu(self, request):
+        url = f'<b><a href="/admin/personal_area/bzuusers/{request.bzu.id}/change/" target="_blank">' \
+              f'Тык сюды</a></b>'
         return mark_safe(url)
 
     get_measurement.short_description = 'Замеры пользователя'
     get_photo.short_description = 'Фотографии пользователя'
     complete_task.short_description = 'Выполненные задания'
     import_csv.short_description = 'Выгрузить в CSV'
+    get_bzu.short_description = 'Показатели БЖУ пользователя'
 
 
-@admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
-    fields = ['name', 'description', 'image', 'preview', 'price', 'unique_code']
-    list_display = ['name', 'price', 'unique_code']
-    search_fields = ['unique_code', 'name']
-    readonly_fields = ["preview"]
-
-    def delete_queryset(self, request, queryset):
-        for product in queryset:
-            for user in Users.objects.filter(purchased_goods=product):
-                user.completed_tasks.remove(product)
-                user.save()
-            file_path = f"{Path(__file__).resolve().parent.parent}/media/{product.image.name}"
-            command = f'rm -r {file_path}'
-            os.system(command)
-            product.delete()
-
-    def preview(self, obj):
-        return mark_safe(
-            f'<a href="{obj.image.url}" target="_blank"><img src="{obj.image.url}" style="max-height: 200px;"></a>')
-
-    preview.short_description = 'Превью товара'
-
-
-@admin.register(Photo)
 class PhotoAdmin(admin.ModelAdmin):
-    fields = ['user', 'front_before', 'sideways_before', 'back_before', 'front_after',
+    fields = ['user_change', 'front_before', 'sideways_before', 'back_before', 'front_after',
               'sideways_after', 'back_after']
-    readonly_fields = ['user', 'front_before', 'sideways_before', 'back_before', 'front_after',
+    readonly_fields = ['user_change', 'front_before', 'sideways_before', 'back_before', 'front_after',
                        'sideways_after', 'back_after']
-    list_display = ['user']
+    list_display = ['user_display']
 
-    def user(self, request):
-        user = Users.objects.get(tg_id=request.tg_id)
-        url = f'<b><a href="/admin/marathon/user/{user.id}/change/" target="_blank">{user.name} {user.surname}</a></b>'
-        return mark_safe(url)
+    def user_display(self, request):
+        for user in request.users_set.all():
+            url = f'<b><a href="/admin/personal_area/photo/{user.photos.id}/change/" target="_blank">' \
+                  f'{user.first_name} {user.last_name} - {user.marathon.name}</a></b>'
+            return mark_safe(url)
 
-    user.short_description = 'Пользователь:'
+    def user_change(self, request):
+        for user in request.users_set.all():
+            url = f'<b><a href="/admin/personal_area/users/{user.id}/change/" target="_blank">{user.first_name} ' \
+                  f'{user.last_name} - {user.marathon.name}</a></b>'
+            return mark_safe(url)
+
+    user_display.short_description = 'Пользователь:'
+    user_change.short_description = 'Пользователь:'
 
     def front_before(self, obj):
         url = f'<a href="{obj.photo_front_before.url}" target="_blank"><img src="{obj.photo_front_before.url}" ' \
@@ -187,80 +153,239 @@ class PhotoAdmin(admin.ModelAdmin):
     back_after.short_description = 'Фото сзади после:'
 
 
-@admin.register(Measurement)
 class MeasurementAdmin(admin.ModelAdmin):
-    fields = ['user', 'waist_before', 'breast_before', 'femur_before', 'weight_before',
+    fields = ['user_change', 'waist_before', 'breast_before', 'femur_before', 'weight_before',
               'waist_after', 'breast_after', 'femur_after', 'weight_after']
-    readonly_fields = ['user']
-    list_display = ['user']
+    readonly_fields = ['user_change', 'waist_before', 'breast_before', 'femur_before', 'weight_before',
+                       'waist_after', 'breast_after', 'femur_after', 'weight_after']
+    list_display = ['user_display']
 
-    def user(self, request):
-        user = Users.objects.get(tg_id=request.tg_id)
-        url = f'<b><a href="/admin/marathon/user/{user.id}/change/" target="_blank">{user.name} {user.surname}</a></b>'
-        return mark_safe(url)
+    def user_display(self, request):
+        for user in request.users_set.all():
+            url = f'<b><a href="/admin/personal_area/measurement/{user.measurement.id}/change/" target="_blank">' \
+                  f'{user.first_name} {user.last_name} - {user.marathon.name}</a></b>'
+            return mark_safe(url)
 
-    user.short_description = mark_safe('<b>Пользователь</b>')
+    def user_change(self, request):
+        for user in request.users_set.all():
+            url = f'<b><a href="/admin/personal_area/users/{user.id}/change/" target="_blank">{user.first_name} ' \
+                  f'{user.last_name} - {user.marathon.name}</a></b>'
+            return mark_safe(url)
+
+    user_display.short_description = mark_safe('<b>Пользователь</b>')
+    user_change.short_description = mark_safe('<b>Пользователь</b>')
 
 
-@admin.register(Marathon)
 class MarathonAdmin(admin.ModelAdmin):
     fields = ['name', 'description', 'date_start', 'date_end', 'send_measurements_before', 'send_measurements_after',
               'close', 'price']
     list_display = ['name', 'date_start', 'date_end', 'send_measurements_before', 'send_measurements_after', 'close']
+    list_editable = ['date_start', 'date_end', 'send_measurements_before', 'send_measurements_after', 'close']
 
     def delete_queryset(self, request, queryset):
-        for user in Users.objects.all():
-            try:
-                Photo.objects.get(tg_id=user.tg_id).delete()
-            except Exception as exc:
-                logging.error(exc)
-            try:
-                Measurement.objects.get(tg_id=user.tg_id).delete()
-            except Exception as exc:
-                logging.error(exc)
-            user.measurement = None
-            user.photos = None
-            user.scopes = 0
-            user.save()
-            file_path = f"{Path(__file__).resolve().parent.parent}/media/user_photos"
-            command = f'rm -r {file_path}/{user.tg_id}'
-            os.system(command)
         for marathon in queryset:
+            for category_task_marathon in marathon.categorytasksmarathon_set.all():
+                CategoryTasks.objects.get(id=category_task_marathon.id).delete()
+                category_task_marathon.delete()
+            for category_training_menu in marathon.categorytrainingmenumarathon_set.all():
+                CategoryTrainingMenu.objects.get(id=category_training_menu.id).delete()
+                category_training_menu.delete()
+            for kcal_category in marathon.kcalcategoryreadymademenumarathon_set.all():
+                KcalCategoryReadyMadeMenu.objects.get(id=kcal_category.id).delete()
+                kcal_category.delete()
+            for product in marathon.product_set.all():
+                product.delete()
+            for task in marathon.tasks_set.all():
+                task.delete()
+            for user in marathon.users_set.all():
+                for codes_user in user.codesusers_set.all():
+                    codes_user.delete()
+                for product_user in user.productusers_set.all():
+                    product_user.delete()
+                for task_user in user.tasksusers_set.all():
+                    task_user.delete()
+                try:
+                    Photo.objects.get(id=user.photos_id).delete()
+                except Exception as exc:
+                    logging.error(exc)
+                try:
+                    Measurement.objects.get(id=user.measurement_id).delete()
+                except Exception as exc:
+                    logging.error(exc)
+                user.delete()
+                file_path = f"{Path(__file__).resolve().parent.parent}/media/user_photos/{user.tg_id}/"
+                command = f'rm -r {file_path}/{user.tg_id}'
+                os.system(command)
             marathon.delete()
 
 
-@admin.register(Tasks)
-class TaskAdmin(admin.ModelAdmin):
-    fields = ['name', 'category', 'description', 'count_scopes', 'url', 'image', 'preview', 'unique_key']
+class TaskInline(admin.TabularInline):
+    model = Tasks
+    fields = ['name', 'category', 'description', 'count_scopes', ('image', 'preview'), ('date_start', 'date_stop')]
     readonly_fields = ['preview']
-    list_display = ['name', 'category', 'count_scopes', 'unique_key']
-    list_filter = ['category']
-    search_fields = ['name', 'unique_key']
-
-    def delete_queryset(self, request, queryset):
-        for task in queryset:
-            for user in Users.objects.filter(completed_tasks=task):
-                user.completed_tasks.remove(task)
-                user.save()
-            file_path = f"{Path(__file__).resolve().parent.parent}/media/{task.image.name}"
-            command = f'rm -r {file_path}'
-            os.system(command)
-        for task in queryset:
-            task.delete()
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size': '20'})},
+        models.TextField: {'widget': Textarea(attrs={'rows': 6, 'cols': 40})},
+    }
+    extra = 0
 
     def preview(self, obj):
-        url = f'<a href="{obj.image.url}" target="_blank"><img src="{obj.image.url}" style="max-height: 200px;"></a>'
+        url = f'<a href="{obj.image.url}" target="_blank"><img src="{obj.image.url}" style="max-height: 50px;"></a>'
         return mark_safe(url)
 
-    preview.short_description = 'Превью задания'
+    preview.short_description = 'Превью'
 
 
-@admin.register(PhotoStates)
+class CategoryTasksInline(admin.StackedInline):
+    model = CategoryTasksMarathon
+
+
+class CategoryAdmin(admin.ModelAdmin):
+    inlines = [CategoryTasksInline, TaskInline]
+    list_display = ['category', 'get_marathon']
+    list_filter = ['categorytasksmarathon__marathon__name']
+
+    def get_marathon(self, obj):
+        return obj.categorytasksmarathon.marathon.name
+
+    get_marathon.short_description = 'Марафон'
+
+
 class PhotoStatesAdmin(admin.ModelAdmin):
+    fields = ['category_photo', 'photo', 'get_photo']
+    readonly_fields = ['get_photo']
+
+    def get_photo(self, obj):
+        url = f'<a href="{obj.photo.url}" target="_blank"><img src="{obj.photo.url}"' \
+              f'style="max-height:200px;"></a> '
+        return mark_safe(url)
+
+    get_photo.short_description = 'Превью'
+
+
+class ProductsAdmin(admin.ModelAdmin):
+    fields = ['name', 'description', ('image', 'get_photo'), 'marathon']
+    readonly_fields = ['get_photo']
+    list_filter = ['marathon']
+    list_display = ['name', 'marathon']
+
+    def get_photo(self, obj):
+        url = f'<a href="{obj.image.url}" target="_blank"><img src="{obj.image.url}"' \
+              f'style="max-height:100px;"></a> '
+        return mark_safe(url)
+
+    get_photo.short_description = 'Превью'
+
+
+class BZUAdmin(admin.ModelAdmin):
     pass
 
 
-# @admin.register(Marathon)
-# class MarathonAdmin(admin.ModelAdmin):
-#     model = Marathon
-#     list_display = ['name', ]
+class CodesAdmin(admin.ModelAdmin):
+    list_display = ['code', 'scopes', 'marathon']
+    list_display_links = ['marathon']
+    list_editable = ['code', 'scopes']
+
+
+class KcalCategoryInLine(admin.StackedInline):
+    model = KcalCategoryReadyMadeMenuMarathon
+    verbose_name = 'Категория - марафон'
+
+
+class DayReadyMadeInline(admin.TabularInline):
+    model = DayReadyMadeMenu
+    extra = 0
+
+
+class TimeDayReadyMadeMenuInline(admin.TabularInline):
+    model = TimeDayReadyMadeMenu
+    extra = 0
+
+
+class KcalCategoryAdmin(admin.ModelAdmin):
+    list_display = ['kcal_category', 'get_marathon']
+    list_filter = ['kcalcategoryreadymademenumarathon__marathon__name']
+    inlines = [KcalCategoryInLine, DayReadyMadeInline]
+
+    def get_marathon(self, obj):
+        return obj.kcalcategoryreadymademenumarathon.marathon.name
+
+    get_marathon.short_description = 'Марафон'
+
+
+class ReadyMadeMenuInline(admin.StackedInline):
+    model = ReadyMadeMenu
+    extra = 0
+    fields = ['name_menu', 'description', 'time_day', 'photo', 'get_photo']
+    readonly_fields = ['get_photo']
+
+    def get_photo(self, obj):
+        url = f'<a href="{obj.photo.url}" target="_blank"><img src="{obj.photo.url}" ' \
+              f'style="max-height:200px;"></a>'
+        return mark_safe(url)
+
+    get_photo.short_description = 'Превью'
+
+
+class TimeDayReadyMadeMenuAdmin(admin.ModelAdmin):
+    inlines = [ReadyMadeMenuInline]
+    fields = ['time_day', 'day', 'get_marathon']
+    readonly_fields = ['get_marathon']
+    list_display = ['time_day', 'day', 'get_marathon']
+    list_filter = ['day__kcal_category__kcalcategoryreadymademenumarathon__marathon__name']
+
+    def get_marathon(self, obj):
+        return obj.day.kcal_category.kcalcategoryreadymademenumarathon.marathon.name
+
+    get_marathon.short_description = 'Марафон'
+
+
+class CategoryTrainingMenuInline(admin.StackedInline):
+    model = CategoryTrainingMenuMarathon
+
+
+class TrainingInfoInline(admin.StackedInline):
+    model = TrainingInfo
+    extra = 0
+    fields = ['name', 'description', 'category', 'photo', 'get_photo']
+    readonly_fields = ['get_photo']
+
+    def get_photo(self, obj):
+        url = f'<a href="{obj.photo.url}" target="_blank"><img src="{obj.photo.url}" ' \
+              f'style="max-height:200px;"></a>'
+        return mark_safe(url)
+
+    get_photo.short_description = 'Превью'
+
+
+class CategoryTrainingMenuAdmin(admin.ModelAdmin):
+    list_display = ['category', 'get_marathon']
+    inlines = [CategoryTrainingMenuInline, TrainingInfoInline]
+    list_filter = ['categorytrainingmenumarathon__marathon__name']
+
+    def get_marathon(self, obj):
+        return obj.categorytrainingmenumarathon.marathon.name
+
+    get_marathon.short_description = 'Марафон'
+
+
+class MyAdminSite(AdminSite):
+
+    def get_app_list(self, request):
+        app_dict = self._build_app_dict(request)
+        app_list = sorted(app_dict.values(), key=lambda x: x['name'].lower())
+        return app_list
+
+
+admin.site = MyAdminSite()
+admin.site.register(Marathon, MarathonAdmin)
+admin.site.register(Users, UsersAdmin)
+admin.site.register(BZUUsers, BZUAdmin)
+admin.site.register(Photo, PhotoAdmin)
+admin.site.register(Measurement, MeasurementAdmin)
+admin.site.register(CategoryTasks, CategoryAdmin)
+admin.site.register(KcalCategoryReadyMadeMenu, KcalCategoryAdmin)
+admin.site.register(TimeDayReadyMadeMenu, TimeDayReadyMadeMenuAdmin)
+admin.site.register(CategoryTrainingMenu, CategoryTrainingMenuAdmin)
+admin.site.register(Product, ProductsAdmin)
+admin.site.register(Codes, CodesAdmin)
