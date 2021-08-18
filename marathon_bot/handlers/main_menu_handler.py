@@ -15,7 +15,7 @@ buttons = [
     InlineKeyboardButton(text='🍓 Получить вкусняшки за задание', callback_data='main_menu_get_scopes'),
     InlineKeyboardButton(text='🏆 Статистика по вкусняшкам', callback_data='stats_all'),
     InlineKeyboardButton(text='⚡️ Призы', callback_data='main_menu_buy_product'),
-    InlineKeyboardButton(text='🔁 Сменить марафон', callback_data='main_menu_marathon_edit'),
+    InlineKeyboardButton(text='🔁 Сменить марафон', callback_data='marathon_switch'),
 ]
 main_menu = InlineKeyboardButton(text='🏠 В главное меню', callback_data='main_menu')
 back = InlineKeyboardButton(text='⬅️ Назад', callback_data='back')

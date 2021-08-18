@@ -35,7 +35,7 @@ def register_handlers(dp: Dispatcher):
                                        state=Register.check_register)
     dp.register_callback_query_handler(none_register_marathon, lambda query: "None" == query.data,
                                        state=Register.check_register)
-    dp.register_callback_query_handler(none_register_marathon, lambda query: "main_menu_marathon_edit" == query.data,
+    dp.register_callback_query_handler(none_register_marathon, lambda query: "marathon_switch" == query.data,
                                        state='*')
     dp.register_message_handler(get_full_name, state=Register.register_in_marathon)
     dp.register_pre_checkout_query_handler(process_pre_checkout_query, state="*")

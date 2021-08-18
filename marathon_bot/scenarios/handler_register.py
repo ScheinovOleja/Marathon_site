@@ -1,3 +1,5 @@
+import datetime
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from pony.orm import db_session
@@ -16,6 +18,8 @@ async def send_welcome(message: types.Message, action='send'):
     markup = types.InlineKeyboardMarkup()
     users = Users.select().where(tg_id=message.chat.id)[:]
     for marathon in marathons:
+        if not marathon.date_start <= datetime.datetime.now().date() < marathon.date_end:
+            continue
         text = f"{marathon.name}"
         if any([user for user in users if user.marathon == marathon]):
             text += " ✅️"
