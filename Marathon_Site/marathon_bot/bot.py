@@ -44,4 +44,3 @@ def main(dispatcher, loop):
 
 if __name__ == '__main__':
     main(dp, loop)
-

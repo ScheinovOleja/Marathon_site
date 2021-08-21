@@ -24,9 +24,9 @@ class UsersAdmin(admin.ModelAdmin):
     search_fields = ['username', 'first_name', 'last_name']
     list_filter = ['sex', 'marathon__name']
     list_display = ['tg_id', 'username', 'first_name', 'last_name', 'marathon']
-    fields = ['username', ('first_name', 'last_name'), 'sex', 'scopes', 'marathon', ('complete_task', 'get_photo',
-                                                                                     'get_measurement', 'get_bzu')]
-    readonly_fields = ['complete_task', 'get_photo', 'get_measurement', 'get_bzu', 'marathon', 'sex', 'username']
+    fields = ['username', ('first_name', 'last_name'), 'sex', 'scopes', 'marathon', ('get_photo', 'get_measurement',
+                                                                                     'get_bzu')]
+    readonly_fields = ['get_photo', 'get_measurement', 'get_bzu', 'marathon', 'sex', 'username']
     list_display_links = ['tg_id', 'marathon']
 
     def import_csv(self, request, queryset):
@@ -56,19 +56,6 @@ class UsersAdmin(admin.ModelAdmin):
         except Exception as exc:
             logging.error(exc)
 
-    def complete_task(self, request):
-        complete_task = TasksUsers.objects.filter(users_id=request.id)
-        text_url = ''
-        for task in complete_task:
-            text_url += f'<li><b><a href="/admin/personal_area/tasks/{task.id}/change/" target="_blank">' \
-                        f'{task.tasks.name}</a></b></li>\n'
-        url = f"""
-                <ul>
-                    {text_url}
-                </ul>
-                """
-        return mark_safe(url)
-
     def get_photo(self, request):
         url = f'<b><a href="/admin/personal_area/photo/{request.photos.id}/change/" target="_blank">Тык сюды</a></b>'
         return mark_safe(url)
@@ -90,7 +77,6 @@ class UsersAdmin(admin.ModelAdmin):
 
     get_measurement.short_description = 'Замеры пользователя'
     get_photo.short_description = 'Фотографии пользователя'
-    complete_task.short_description = 'Выполненные задания'
     import_csv.short_description = 'Выгрузить в CSV'
     get_bzu.short_description = 'Показатели БЖУ пользователя'
 

@@ -184,7 +184,7 @@ async def get_photo_from_db(query: types.CallbackQuery, state: FSMContext):
     with db_session:
         user = await Users.get_user(tg_id=query.from_user.id, marathon_id=state_data['marathon_id'])
         photo_from_db = getattr(user.photos, states.get(query.data.split("post:get:")[1].split("_get")[0]))
-        photo = open(MEDIA_ROOT + "users_photo/" + photo_from_db, 'rb')
+        photo = open(MEDIA_ROOT + photo_from_db, 'rb')
         markup.add(back, main_menu)
         msg = await query.message.answer_photo(photo, caption=text, reply_markup=markup)
     await query.message.delete()

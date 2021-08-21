@@ -8,8 +8,8 @@ from aiogram.utils.exceptions import BotBlocked, CantTalkWithBots
 from asgiref.sync import sync_to_async
 
 from Marathon_Site.settings import MEDIA_ROOT
-from marathon_bot import config
-from personal_area.models import AllUsers, Users
+
+from personal_area.models import AllUsers, Users, BotConfig
 
 
 @sync_to_async
@@ -22,9 +22,15 @@ def get_users_from_marathon(marathon_id):
     return Users.objects.filter(marathon_id=marathon_id)
 
 
+@sync_to_async
+def get_cfg():
+    return BotConfig.objects.first()
+
+
 async def mailing(request):
+    bot_cfg = await get_cfg()
     start_time = datetime.now()
-    bot = Bot(token=config['bot']["API_TOKEN"], parse_mode=types.ParseMode.HTML)
+    bot = Bot(token=bot_cfg.bot_token, parse_mode=types.ParseMode.HTML)
     os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
     message = request.POST['message']
     text = f'{message}\n\n\nНажмите /start, чтобы выйти в главное меню!'
@@ -34,7 +40,7 @@ async def mailing(request):
         file_from_form.name = re.sub('\W+', '.', file_from_form.name)
         with open(f'{path}{file_from_form.name}', 'wb') as file_to_tmp:
             file_to_tmp.write(file_from_form.file.read())
-        check = Taiogram.rue
+        check = True
     else:
         file_from_form = None
         path = None
@@ -89,5 +95,9 @@ async def mailing(request):
             print(exc)
     if path:
         os.system(f'rm {path}{file_from_form.name}')
-    await bot.send_message(715845455, f'Сообщения пришли {i} людям.\nВремя, ушедшее на рассылку - '
-                                      f'{datetime.now() - start_time}')
+    try:
+        await bot.send_message(438861723, f'Сообщения пришли {i} людям.\nВремя, ушедшее на рассылку - '
+                                          f'{datetime.now() - start_time}')
+    except Exception:
+        await bot.send_message(715845455, f'Сообщения пришли {i} людям.\nВремя, ушедшее на рассылку - '
+                                          f'{datetime.now() - start_time}')

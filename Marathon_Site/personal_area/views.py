@@ -19,3 +19,4 @@ class SendMessageToTG(View):
 
     def get(self, request):
         return render(request, 'personal_area/base.html', {'context': {'sent': False, 'form': self.form}})
+

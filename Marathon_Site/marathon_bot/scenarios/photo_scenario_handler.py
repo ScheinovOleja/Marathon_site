@@ -17,6 +17,8 @@ async def add_photo_to_db(message: types.Message, state: FSMContext):
     file_path = MEDIA_ROOT + 'users_photo'
     if not os.path.isdir(file_path):
         os.mkdir(file_path)
+    if not os.path.isdir(file_path + f'/{message.chat.id}'):
+        os.mkdir(file_path + f'/{message.chat.id}')
     if not os.path.isdir(file_path + f'/{message.chat.id}/{state_data["marathon_id"]}'):
         os.mkdir(file_path + f'/{message.chat.id}/{state_data["marathon_id"]}')
     if message.content_type == 'document':
@@ -44,7 +46,7 @@ async def add_photo_to_db(message: types.Message, state: FSMContext):
             commit()
         else:
             photo = await Photo.get_photo(photo_id=user.photos.id)
-        setattr(photo, states.get(state_data['callback']), file.name.split("users_photo/")[1])
+        setattr(photo, states.get(state_data['callback']), file.name.split("media/")[1])
         user.photos = photo
     await message.delete()
     markup.add(back, main_menu)
