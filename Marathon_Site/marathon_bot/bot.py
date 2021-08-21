@@ -1,3 +1,6 @@
+import sys
+sys.path.append("/var/www/Marathon_site/Marathon_Site/")
+
 from aiogram import executor
 
 from marathon_bot import dp, loop

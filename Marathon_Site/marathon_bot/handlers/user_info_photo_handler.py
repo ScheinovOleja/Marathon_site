@@ -94,12 +94,12 @@ async def send_menu_user_info_photos(query: types.CallbackQuery, state: FSMConte
     state_data = await state.get_data()
     with db_session:
         user = await Users.get_user(tg_id=query.from_user.id, marathon_id=state_data['marathon_id'])
-        if user.marathon.send_measurements_after:
-            markup.add(types.InlineKeyboardButton(text=f'{btn("after")}',
-                                                  callback_data='after'))
         if user.marathon.send_measurements_before:
             markup.add(types.InlineKeyboardButton(text=f'{btn("before")}',
                                                   callback_data='before'))
+        if user.marathon.send_measurements_after:
+            markup.add(types.InlineKeyboardButton(text=f'{btn("after")}',
+                                                  callback_data='after'))
     markup.add(back, main_menu)
     await UserInfoMenuPhotos.first()
     await query.message.edit_text('Выберите пункт меню:', reply_markup=markup)
@@ -115,12 +115,12 @@ async def send_menu_user_info_photos_choice(query: types.CallbackQuery, state: F
     except KeyError:
         choice_data = query.data
         await state.update_data({'callback_1': query.data})
-    if 'after' in choice_data:
-        for button in buttons_photos_choice_after:
+    if 'before' in choice_data:
+        for button in buttons_photos_choice_before:
             markup.add(button)
         text += 'ДО:'
-    elif 'before' in choice_data:
-        for button in buttons_photos_choice_before:
+    elif 'after' in choice_data:
+        for button in buttons_photos_choice_after:
             markup.add(button)
         text += 'ПОСЛЕ:'
     markup.add(back, main_menu)
@@ -146,17 +146,6 @@ async def send_menu_user_info_photos_add_get(query: types.CallbackQuery, state: 
         except KeyError:
             callback = states.get(query.data.split('choice:choice:')[1])
             await state.update_data({'callback': query.data})
-        if 'after' in choice_data:
-            try:
-                if getattr(photo, callback):
-                    button_add = buttons_photos_add_after[callback]
-                    button_add.text = button_add.text.replace('Загрузить', 'Поменять')
-                    markup.add(button_add)
-                    markup.add(buttons_photos_get_after[callback])
-                else:
-                    markup.add(buttons_photos_add_after[callback])
-            except Exception as exc:
-                markup.add(buttons_photos_add_after[callback])
         if 'before' in choice_data:
             try:
                 if getattr(photo, callback):
@@ -168,6 +157,17 @@ async def send_menu_user_info_photos_add_get(query: types.CallbackQuery, state: 
                     markup.add(buttons_photos_add_before[callback])
             except:
                 markup.add(buttons_photos_add_before[callback])
+        if 'after' in choice_data:
+            try:
+                if getattr(photo, callback):
+                    button_add = buttons_photos_add_after[callback]
+                    button_add.text = button_add.text.replace('Загрузить', 'Поменять')
+                    markup.add(button_add)
+                    markup.add(buttons_photos_get_after[callback])
+                else:
+                    markup.add(buttons_photos_add_after[callback])
+            except Exception as exc:
+                markup.add(buttons_photos_add_after[callback])
     markup.add(back, main_menu)
     await UserInfoMenuPhotos.last()
     try:

@@ -17,10 +17,10 @@ buttons_menu = [
 data_measurement = CallbackData('measurement', 'id', 'action')
 
 buttons_measurement = {
-    'after': types.InlineKeyboardButton(text=f'{btn("measurement_after")}',
-                                        callback_data=data_measurement.new(id="-", action='measurement_after')),
     'before': types.InlineKeyboardButton(text=f'{btn("measurement_before")}',
                                          callback_data=data_measurement.new(id="-", action='measurement_before')),
+    'after': types.InlineKeyboardButton(text=f'{btn("measurement_after")}',
+                                        callback_data=data_measurement.new(id="-", action='measurement_after')),
 }
 
 
@@ -48,18 +48,18 @@ async def send_menu_user_info_measurement(query: types.CallbackQuery, state: FSM
         text = "Вы не предоставляли информацию о своих замерах!"
     else:
         text = f'<pre>ДО:      ----->   ПОСЛЕ:</pre>\n' \
-               f'<pre>Грудь:{measurement.breast_after if measurement.breast_after else ""}----->' \
-               f'Грудь: {measurement.breast_before if measurement.breast_before else ""},</pre>\n' \
-               f'<pre>Талия: {measurement.waist_after if measurement.waist_after else ""}----->' \
-               f'Талия: {measurement.waist_before if measurement.waist_before else ""},</pre>\n' \
-               f'<pre>Бедра: {measurement.femur_after if measurement.femur_after else ""}----->' \
-               f'Бедра: {measurement.femur_before if measurement.femur_before else ""},</pre>\n' \
-               f'<pre>Вес: {measurement.weight_after if measurement.weight_after else ""}----->' \
-               f'Вес: {measurement.weight_before if measurement.weight_before else ""}</pre>'
-    if Marathon.get(id=user.marathon.id).send_measurements_after:
-        markup.add(buttons_measurement['after'])
+               f'<pre>Грудь:{measurement.breast_before if measurement.breast_before else ""}----->' \
+               f'Грудь: {measurement.breast_after if measurement.breast_after else ""},</pre>\n' \
+               f'<pre>Талия: {measurement.waist_before if measurement.waist_before else ""}----->' \
+               f'Талия: {measurement.waist_after if measurement.waist_after else ""},</pre>\n' \
+               f'<pre>Бедра: {measurement.femur_before if measurement.femur_before else ""}----->' \
+               f'Бедра: {measurement.femur_after if measurement.femur_after else ""},</pre>\n' \
+               f'<pre>Вес: {measurement.weight_before if measurement.weight_before else ""}----->' \
+               f'Вес: {measurement.weight_after if measurement.weight_after else ""}</pre>'
     if Marathon.get(id=user.marathon.id).send_measurements_before:
         markup.add(buttons_measurement['before'])
+    if Marathon.get(id=user.marathon.id).send_measurements_after:
+        markup.add(buttons_measurement['after'])
     markup.add(back, main_menu)
     await query.message.edit_text(text, 'html', reply_markup=markup)
     await UserInfoMenuMeasurement.first()

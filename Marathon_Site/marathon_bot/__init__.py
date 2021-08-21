@@ -3,7 +3,6 @@ import configparser
 import logging
 import os
 from pathlib import Path
-
 import psycopg2
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.files import JSONStorage
