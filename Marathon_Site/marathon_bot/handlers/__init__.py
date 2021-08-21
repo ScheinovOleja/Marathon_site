@@ -2,7 +2,7 @@ from aiogram import Dispatcher
 
 from marathon_bot.handlers.all_stats_handler import send_stats
 from marathon_bot.handlers.kcal_menu_handler import send_menu_kcal_welcome, data_kcal_welcome_menu
-from marathon_bot.handlers.main_menu_handler import send_main_menu, delete_all_message
+from marathon_bot.handlers.main_menu_handler import send_main_menu
 from marathon_bot.handlers.product_handler import send_products, send_product_info, back_to_send_products
 from marathon_bot.handlers.ready_made_menu_handler import send_category_ready_made_menu, send_all_day, send_time_day, \
     send_ready_made_menu_list, send_info_by_ready_made_menu
@@ -15,8 +15,8 @@ from marathon_bot.handlers.user_info_photo_handler import send_menu_user_info_ph
     send_menu_user_info_photos_add_get, data_photos_choice, send_menu_wait_photo_from_user, data_photos_get_add, \
     get_photo_from_db
 from marathon_bot.states.all_states_menu import MainMenu, TaskMenu, UserInfoMenu, CalculationOfKBZUMenu, \
-    ReadyMadeMenuState, TrainingMenu, StatsMenu, ProductsMenu, GetScopes, UserInfoMenuMeasurement, UserInfoMenuPhotos
-from marathon_bot.states.state_scenarios import Register, MeasurementState
+    ReadyMadeMenuState, TrainingMenu, ProductsMenu, GetScopes, UserInfoMenuMeasurement, UserInfoMenuPhotos
+from marathon_bot.states.state_scenarios import MeasurementState
 
 
 def all_stats_handler(dp: Dispatcher):
@@ -111,7 +111,3 @@ def user_info_photo_handler(dp: Dispatcher):
 def commons_handler(dp: Dispatcher):
     dp.register_callback_query_handler(send_main_menu, lambda query: "main_menu" == query.data,
                                        state='*')
-    dp.register_message_handler(delete_all_message,
-                                state=[MainMenu, TaskMenu, UserInfoMenu, CalculationOfKBZUMenu, ReadyMadeMenuState,
-                                       TrainingMenu, StatsMenu, ProductsMenu, Register.check_register,
-                                       Register.register_in_marathon])

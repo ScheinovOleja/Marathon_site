@@ -99,6 +99,7 @@ class Marathon(db.Entity):
     category_training_menu = Set('CategoryTrainingMenu', nullable=True, reverse='marathon',
                                  column='category_id')
     codes = Optional('Codes', nullable=True, cascade_delete=True)
+    invite_code = Optional('InviteCode', nullable=True, reverse='marathon')
 
     @staticmethod
     async def get_marathon(marathon_id):
@@ -215,6 +216,19 @@ class TrainingInfo(db.Entity):
     description = Required(str)
     category = Required(CategoryTrainingMenu, column='category_id')
     photo = Optional(str, nullable=True, default='', column='photo')
+
+
+class AllUsers(db.Entity):
+    _table_ = 'all_users'
+    id = PrimaryKey(int, auto=True)
+    tg_id = Required(int, unique=True)
+
+
+class InviteCode(db.Entity):
+    _table_ = 'invite_code'
+    marathon = Required(Marathon, column='marathon_id')
+    code = Required(str)
+    date_delete = Required(datetime.datetime)
 
 
 db.generate_mapping(create_tables=True)

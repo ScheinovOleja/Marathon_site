@@ -4,7 +4,7 @@ from pony.orm import db_session
 
 from marathon_bot.general_func import send_photo
 from marathon_bot.handlers.main_menu_handler import main_menu, back
-from marathon_bot.models import CategoryTrainingMenu, TrainingInfo, Marathon
+from marathon_bot.models import TrainingInfo, Marathon
 from marathon_bot.states.all_states_menu import TrainingMenu
 
 

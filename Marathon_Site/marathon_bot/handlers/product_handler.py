@@ -3,7 +3,6 @@ from aiogram.types import InlineKeyboardMarkup, CallbackQuery, InlineKeyboardBut
 from aiogram.utils.exceptions import BadRequest
 from pony.orm import db_session
 
-from marathon_bot import MEDIA_ROOT
 from marathon_bot.general_func import send_photo
 from marathon_bot.handlers.main_menu_handler import main_menu, back
 from marathon_bot.models import Product

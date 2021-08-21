@@ -6,11 +6,12 @@ from marathon_bot.handlers.user_info_measurement_handler import data_measurement
 from marathon_bot.scenarios.handler_calculation_kcal import send_first_scenario_message_calculate_kcal, set_height, \
     set_age, set_sex, set_purpose, successfully, set_weight_kcal, data_activity
 from marathon_bot.scenarios.handler_register import send_welcome, check_register_from_marathon, register_marathon, \
-    none_register_marathon, get_full_name, process_pre_checkout_query, process_successful_payment
+    none_register_marathon, get_full_name, process_pre_checkout_query, process_successful_payment, delete_all_message
 from marathon_bot.scenarios.handler_set_measurement import set_weight_measurement, \
     send_first_scenario_message_measurement, set_breast, set_waist, set_femur
 from marathon_bot.scenarios.photo_scenario_handler import add_photo_to_db
-from marathon_bot.states.all_states_menu import CalculationOfKBZUMenu, UserInfoMenuMeasurement
+from marathon_bot.states.all_states_menu import CalculationOfKBZUMenu, UserInfoMenuMeasurement, MainMenu, TaskMenu, \
+    UserInfoMenu, ReadyMadeMenuState, ProductsMenu, StatsMenu, TrainingMenu
 from marathon_bot.states.state_scenarios import CalculateKcal, Register, MeasurementState, Photos
 
 
@@ -40,6 +41,10 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(get_full_name, state=Register.register_in_marathon)
     dp.register_pre_checkout_query_handler(process_pre_checkout_query, state="*")
     dp.register_message_handler(process_successful_payment, content_types=ContentType.SUCCESSFUL_PAYMENT, state="*")
+    dp.register_message_handler(delete_all_message,
+                                state=[MainMenu, TaskMenu, UserInfoMenu, CalculationOfKBZUMenu, ReadyMadeMenuState,
+                                       TrainingMenu, StatsMenu, ProductsMenu, Register.check_register,
+                                       Register.choice_marathon, Register.register_in_marathon])
 
 
 def measurements_handler(dp: Dispatcher):

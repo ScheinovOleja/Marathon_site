@@ -1,5 +1,5 @@
 from aiogram.dispatcher import FSMContext
-from aiogram.types import InlineKeyboardButton, CallbackQuery, InlineKeyboardMarkup, Message
+from aiogram.types import InlineKeyboardButton, CallbackQuery, InlineKeyboardMarkup
 from aiogram.utils.exceptions import BadRequest, MessageCantBeEdited
 from pony.orm import db_session
 
@@ -59,5 +59,4 @@ async def send_main_menu(query: CallbackQuery, state: FSMContext):
     await state.set_data({"marathon_id": state_data['marathon_id']})
 
 
-async def delete_all_message(message: Message):
-    await message.delete()
+

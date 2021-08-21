@@ -1,6 +1,5 @@
 import csv
 import logging
-import os
 from pathlib import Path
 
 from django.contrib import admin
@@ -80,6 +79,11 @@ class UsersAdmin(admin.ModelAdmin):
         url = f'<b><a href="/admin/personal_area/bzuusers/{request.bzu.id}/change/" target="_blank">' \
               f'Тык сюды</a></b>'
         return mark_safe(url)
+
+    def delete_queryset(self, request, queryset):
+        for user in queryset:
+            users_delete(user)
+            user.delete()
 
     get_measurement.short_description = 'Замеры пользователя'
     get_photo.short_description = 'Фотографии пользователя'
@@ -184,42 +188,11 @@ class MarathonAdmin(admin.ModelAdmin):
 
     def delete_queryset(self, request, queryset):
         for marathon in queryset:
-            for category_task_marathon in marathon.categorytasksmarathon_set.all():
-                CategoryTasks.objects.get(id=category_task_marathon.id).delete()
-                category_task_marathon.delete()
-            for category_training_menu in marathon.categorytrainingmenumarathon_set.all():
-                CategoryTrainingMenu.objects.get(id=category_training_menu.id).delete()
-                category_training_menu.delete()
-            for kcal_category in marathon.kcalcategoryreadymademenumarathon_set.all():
-                KcalCategoryReadyMadeMenu.objects.get(id=kcal_category.id).delete()
-                kcal_category.delete()
-            for product in marathon.product_set.all():
-                product.delete()
-            for task in marathon.tasks_set.all():
-                task.delete()
-            for user in marathon.users_set.all():
-                for codes_user in user.codesusers_set.all():
-                    codes_user.delete()
-                for product_user in user.productusers_set.all():
-                    product_user.delete()
-                for task_user in user.tasksusers_set.all():
-                    task_user.delete()
-                try:
-                    Photo.objects.get(id=user.photos_id).delete()
-                except Exception as exc:
-                    logging.error(exc)
-                try:
-                    Measurement.objects.get(id=user.measurement_id).delete()
-                except Exception as exc:
-                    logging.error(exc)
-                user.delete()
-                file_path = f"{Path(__file__).resolve().parent.parent}/media/user_photos/{user.tg_id}/"
-                command = f'rm -r {file_path}/{user.tg_id}'
-                os.system(command)
+            marathon_delete(marathon)
             marathon.delete()
 
 
-class TaskInline(admin.TabularInline):
+class TaskInline(admin.StackedInline):
     model = Tasks
     fields = ['name', 'category', 'description', 'count_scopes', ('image', 'preview'), ('date_start', 'date_stop')]
     readonly_fields = ['preview']
@@ -369,6 +342,11 @@ class CategoryTrainingMenuAdmin(admin.ModelAdmin):
     get_marathon.short_description = 'Марафон'
 
 
+class InviteCodeAdmin(admin.ModelAdmin):
+    list_display = ['code', 'marathon', 'date_delete']
+    list_filter = ['marathon']
+
+
 class MyAdminSite(AdminSite):
 
     def get_app_list(self, request):
@@ -389,3 +367,4 @@ admin.site.register(TimeDayReadyMadeMenu, TimeDayReadyMadeMenuAdmin)
 admin.site.register(CategoryTrainingMenu, CategoryTrainingMenuAdmin)
 admin.site.register(Product, ProductsAdmin)
 admin.site.register(Codes, CodesAdmin)
+admin.site.register(InviteCode, InviteCodeAdmin)

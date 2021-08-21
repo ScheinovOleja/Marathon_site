@@ -17,9 +17,12 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
-from . import settings
+from personal_area import views
+from .settings import MEDIA_URL, MEDIA_ROOT, STATIC_ROOT, STATIC_URL
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls, name='admin'),
     path('dashboard/', include('personal_area.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('', views.SendMessageToTG.as_view(), name='send_message')
+]
+urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT) + static(STATIC_URL, document_root=STATIC_ROOT)

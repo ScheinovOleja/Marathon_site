@@ -1,9 +1,11 @@
-import datetime
+import random
+import string
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Manager
 
+from personal_area.general_func import marathon_delete, users_delete
 from personal_area.validators import validate_date, validate_price
 
 
@@ -45,10 +47,8 @@ class Tasks(models.Model):
     description = models.TextField(max_length=1000, verbose_name='Описание задания')
     count_scopes = models.IntegerField(verbose_name='Количество очков за задание')
     image = models.ImageField(blank=True, upload_to='photo_tasks/', null=True, verbose_name='Фотография задания')
-    date_start = models.DateTimeField(auto_created=datetime.datetime.now(), null=False,
-                                      verbose_name='Дата открытия задания')
-    date_stop = models.DateTimeField(auto_created=datetime.datetime.now(), null=False,
-                                     verbose_name='Дата закрытия задания')
+    date_start = models.DateTimeField(null=False, verbose_name='Дата открытия задания')
+    date_stop = models.DateTimeField(null=False, verbose_name='Дата закрытия задания')
 
     class Meta:
         db_table = 'tasks'
@@ -74,6 +74,10 @@ class Marathon(models.Model):
 
     def __str__(self):
         return f'{self.name}'
+
+    def delete(self, using=None, keep_parents=False):
+        marathon_delete(self)
+        super(Marathon, self).delete()
 
 
 class Measurement(models.Model):
@@ -125,7 +129,7 @@ class Product(models.Model):
 
 
 class ProductUsers(models.Model):
-    product = models.OneToOneField(Product, models.DO_NOTHING)
+    product = models.ForeignKey(Product, models.DO_NOTHING)
     users = models.ForeignKey('Users', models.DO_NOTHING)
 
     class Meta:
@@ -134,7 +138,7 @@ class ProductUsers(models.Model):
 
 
 class TasksUsers(models.Model):
-    tasks = models.OneToOneField(Tasks, models.DO_NOTHING)
+    tasks = models.ForeignKey(Tasks, models.DO_NOTHING)
     users = models.ForeignKey('Users', models.DO_NOTHING)
 
     class Meta:
@@ -205,6 +209,10 @@ class Users(models.Model):
 
     def __str__(self):
         return f'{self.tg_id} - {self.last_name} {self.first_name}'
+    
+    def delete(self, using=None, keep_parents=False):
+        users_delete(self)
+        super(Users, self).delete()
 
 
 class PhotoStates(models.Model):
@@ -328,3 +336,27 @@ class TrainingInfo(models.Model):
 
     def __str__(self):
         return f'{self.name}'
+
+
+class AllUsers(models.Model):
+    tg_id = models.IntegerField(unique=True)
+
+    class Meta:
+        db_table = 'all_users'
+
+
+class InviteCode(models.Model):
+    marathon = models.ForeignKey(Marathon, models.DO_NOTHING, verbose_name='Марафон, в который приглашает код')
+    code = models.CharField(default='', max_length=12, blank=True, unique=True, verbose_name='Пригласительный код')
+    date_delete = models.DateTimeField(null=False, verbose_name='Дата/время удаления кода')
+
+    def save(self, *args, **kwargs):
+        if self.code == '':
+            self.code = ''.join(random.choice(string.ascii_letters) for _ in range(12))
+        else:
+            pass
+        return super(InviteCode, self).save(*args, **kwargs)
+
+    class Meta:
+        db_table = 'invite_code'
+        verbose_name_plural = 'Коды приглашения'

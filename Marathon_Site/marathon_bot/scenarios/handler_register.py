@@ -2,18 +2,24 @@ import datetime
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from pony.orm import db_session
+from pony.orm import db_session, commit, MultipleObjectsFoundError
 from psycopg2.extras import NamedTupleCursor
 
 from marathon_bot import con, bot, config
 from marathon_bot.handlers.main_menu_handler import send_main_menu
-from marathon_bot.models import Marathon, Users
+from marathon_bot.models import Marathon, Users, AllUsers, InviteCode
 from marathon_bot.states.all_states_menu import MainMenu
 from marathon_bot.states.state_scenarios import Register
 
 
 @db_session
 async def send_welcome(message: types.Message, action='send'):
+    try:
+        if not AllUsers.get(tg_id=message.from_user.id):
+            AllUsers(tg_id=message.from_user.id)
+            commit()
+    except MultipleObjectsFoundError:
+        pass
     marathons = Marathon.select().order_by(Marathon.id)[:]
     markup = types.InlineKeyboardMarkup()
     users = Users.select().where(tg_id=message.chat.id)[:]
@@ -28,9 +34,7 @@ async def send_welcome(message: types.Message, action='send'):
         else:
             text += " 🆓"
         if marathon.close:
-            text += " 🔒"
-        else:
-            text += " 🔓"
+            text += " 🛠"
         markup.add(
             types.InlineKeyboardButton(
                 text=text,
@@ -38,7 +42,7 @@ async def send_welcome(message: types.Message, action='send'):
         )
     if action == 'send':
         await message.answer("Добро пожаловать!\nСписок доступных на данный момент марафонов:\n\n"
-                             "🔒/🔓 - закрытый/открытый марафон\n"
+                             "🛠 - марафон на техническом обслуживании\n"
                              "💎/🆓 - платный/бесплатный марафон\n"
                              "✅ - вы зарегистрированы в марафоне\n", reply_markup=markup)
     elif action == 'edit':
@@ -154,4 +158,22 @@ async def get_full_name(message: types.Message, state: FSMContext):
         return
     await state.update_data({"marathon_id": state_data['marathon_id'], 'msg': state_data['msg']})
     await send_main_menu(types.CallbackQuery(message=message), state)
+    await message.delete()
+
+
+@db_session
+async def delete_all_message(message: types.Message, state: FSMContext):
+    check = InviteCode.get(code=message.text)
+    if check:
+        if check.date_delete > datetime.datetime.now(check.date_delete.tzinfo):
+            if any([user.marathon == check.marathon for user in Users.select().where(tg_id=message.from_user.id)]):
+                pass
+            else:
+                await Register.check_register.set()
+                await process_successful_payment(message, state)
+                await state.update_data({'marathon_id': check.marathon.id})
+        else:
+            pass
+    else:
+        pass
     await message.delete()
