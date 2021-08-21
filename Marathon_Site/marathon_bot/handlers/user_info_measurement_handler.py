@@ -3,21 +3,23 @@ from aiogram.dispatcher import FSMContext
 from aiogram.utils.callback_data import CallbackData
 from pony.orm import db_session
 
+from marathon_bot.general_func import btn
 from marathon_bot.handlers.main_menu_handler import main_menu, back
 from marathon_bot.models import Users, Marathon
 from marathon_bot.states.all_states_menu import UserInfoMenu, UserInfoMenuMeasurement
 
 buttons_menu = [
-    types.InlineKeyboardButton(text='Замеры', callback_data='user_info_measurement_choice'),
-    types.InlineKeyboardButton(text='Фотографии', callback_data='user_info_photos_choice'),
+    types.InlineKeyboardButton(text=f'{btn("user_info_measurement_choice")}',
+                               callback_data='user_info_measurement_choice'),
+    types.InlineKeyboardButton(text=f'{btn("user_info_photos_choice")}', callback_data='user_info_photos_choice'),
 ]
 
 data_measurement = CallbackData('measurement', 'id', 'action')
 
 buttons_measurement = {
-    'after': types.InlineKeyboardButton(text='Ввести замеры ДО',
+    'after': types.InlineKeyboardButton(text=f'{btn("measurement_after")}',
                                         callback_data=data_measurement.new(id="-", action='measurement_after')),
-    'before': types.InlineKeyboardButton(text='Ввести замеры ПОСЛЕ',
+    'before': types.InlineKeyboardButton(text=f'{btn("measurement_before")}',
                                          callback_data=data_measurement.new(id="-", action='measurement_before')),
 }
 

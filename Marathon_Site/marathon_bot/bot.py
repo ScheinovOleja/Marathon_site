@@ -35,12 +35,13 @@ def register_back_handlers(dispatcher):
     back_photos_user(dispatcher)
 
 
-def register_all(dispatcher):
+def main(dispatcher, loop):
     register_handler_scenarios(dispatcher)
     register_all_handlers(dispatcher)
     register_back_handlers(dispatcher)
+    executor.start_polling(dp, skip_updates=True, loop=loop)
 
 
 if __name__ == '__main__':
-    register_all(dp)
-    executor.start_polling(dp, skip_updates=True, loop=loop)
+    main(dp, loop)
+

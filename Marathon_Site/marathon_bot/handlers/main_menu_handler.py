@@ -4,21 +4,22 @@ from aiogram.utils.exceptions import BadRequest, MessageCantBeEdited
 from pony.orm import db_session
 
 from marathon_bot import bot
+from marathon_bot.general_func import btn
 from marathon_bot.models import Users, Marathon
 from marathon_bot.states.all_states_menu import MainMenu
 from marathon_bot.states.state_scenarios import Register
 
 buttons = [
-    InlineKeyboardButton(text='💼 Задания', callback_data='main_menu_tasks'),
-    InlineKeyboardButton(text='Фотографии и замеры', callback_data='main_menu_user_info'),
-    InlineKeyboardButton(text='Расчет КБЖУ и Меню', callback_data='main_menu_kcal'),
-    InlineKeyboardButton(text='🍓 Получить вкусняшки за задание', callback_data='main_menu_get_scopes'),
-    InlineKeyboardButton(text='🏆 Статистика по вкусняшкам', callback_data='stats_all'),
-    InlineKeyboardButton(text='⚡️ Призы', callback_data='main_menu_buy_product'),
-    InlineKeyboardButton(text='🔁 Сменить марафон', callback_data='marathon_switch'),
+    InlineKeyboardButton(text=f'{btn("main_menu_tasks")}', callback_data='main_menu_tasks'),
+    InlineKeyboardButton(text=f'{btn("main_menu_user_info")}', callback_data='main_menu_user_info'),
+    InlineKeyboardButton(text=f'{btn("main_menu_kcal")}', callback_data='main_menu_kcal'),
+    InlineKeyboardButton(text=f'{btn("main_menu_get_scopes")}', callback_data='main_menu_get_scopes'),
+    InlineKeyboardButton(text=f'{btn("stats_all")}', callback_data='stats_all'),
+    InlineKeyboardButton(text=f'{btn("main_menu_buy_product")}', callback_data='main_menu_buy_product'),
+    InlineKeyboardButton(text=f'{btn("marathon_switch")}', callback_data='marathon_switch'),
 ]
-main_menu = InlineKeyboardButton(text='🏠 В главное меню', callback_data='main_menu')
-back = InlineKeyboardButton(text='⬅️ Назад', callback_data='back')
+main_menu = InlineKeyboardButton(text=f'{btn("main_menu")}', callback_data='main_menu')
+back = InlineKeyboardButton(text=f'{btn("back")}', callback_data='back')
 
 
 async def send_main_menu(query: CallbackQuery, state: FSMContext):
@@ -57,6 +58,3 @@ async def send_main_menu(query: CallbackQuery, state: FSMContext):
             await query.message.answer(text, reply_markup=markup)
             await query.message.delete()
     await state.set_data({"marathon_id": state_data['marathon_id']})
-
-
-

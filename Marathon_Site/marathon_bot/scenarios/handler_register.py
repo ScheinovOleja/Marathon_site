@@ -5,7 +5,7 @@ from aiogram.dispatcher import FSMContext
 from pony.orm import db_session, commit, MultipleObjectsFoundError
 from psycopg2.extras import NamedTupleCursor
 
-from marathon_bot import con, bot, config
+from marathon_bot import con, bot, bot_cfg
 from marathon_bot.handlers.main_menu_handler import send_main_menu
 from marathon_bot.models import Marathon, Users, AllUsers, InviteCode
 from marathon_bot.states.all_states_menu import MainMenu
@@ -46,7 +46,10 @@ async def send_welcome(message: types.Message, action='send'):
                              "💎/🆓 - платный/бесплатный марафон\n"
                              "✅ - вы зарегистрированы в марафоне\n", reply_markup=markup)
     elif action == 'edit':
-        await message.edit_text("Добро пожаловать!\nСписок доступных на данный момент марафонов:", reply_markup=markup)
+        await message.edit_text("Добро пожаловать!\nСписок доступных на данный момент марафонов:\n\n"
+                                "🛠 - марафон на техническом обслуживании\n"
+                                "💎/🆓 - платный/бесплатный марафон\n"
+                                "✅ - вы зарегистрированы в марафоне\n", reply_markup=markup)
     await Register.choice_marathon.set()
 
 
@@ -103,7 +106,7 @@ async def register_marathon(query: types.CallbackQuery, state: FSMContext):
             query.message.chat.id,
             title=marathon.name,
             description=marathon.description,
-            provider_token=config['bot']['PAY'],
+            provider_token=bot_cfg.pay_token,
             currency='rub',
             prices=prices,
             need_name=True,

@@ -231,4 +231,51 @@ class InviteCode(db.Entity):
     date_delete = Required(datetime.datetime)
 
 
+class ButtonsText(db.Entity):
+    _table_ = 'btn_text'
+    main_menu_tasks = Required(str)
+    main_menu_user_info = Required(str)
+    main_menu_kcal = Required(str)
+    main_menu_get_scopes = Required(str)
+    main_menu_buy_product = Required(str)
+    marathon_switch = Required(str)
+    back = Required(str)
+    main_menu = Required(str)
+    user_info_measurement_choice = Required(str)
+    user_info_photos_choice = Required(str)
+    stats_all = Required(str)
+    kcal = Required(str)
+    ready_made_menu = Required(str)
+    training = Required(str)
+    measurement_after = Required(str)
+    measurement_before = Required(str)
+    after = Required(str)
+    before = Required(str)
+    front_after = Required(str)
+    sideways_after = Required(str)
+    back_after = Required(str)
+    front_before = Required(str)
+    sideways_before = Required(str)
+    back_before = Required(str)
+    add_front_after = Required(str)
+    add_sideways_after = Required(str)
+    add_back_after = Required(str)
+    add_front_before = Required(str)
+    add_sideways_before = Required(str)
+    add_back_before = Required(str)
+    front_after_get = Required(str)
+    sideways_after_get = Required(str)
+    back_after_get = Required(str)
+    front_before_get = Required(str)
+    sideways_before_get = Required(str)
+    back_before_get = Required(str)
+
+
+class BotConfig(db.Entity):
+    _table_ = 'bot_cfg'
+    name_bot = Required(str)
+    bot_token = Required(str)
+    pay_token = Required(str)
+
+
 db.generate_mapping(create_tables=True)

@@ -3,6 +3,7 @@ from aiogram.types import InlineKeyboardButton, CallbackQuery, InlineKeyboardMar
 from aiogram.utils.callback_data import CallbackData
 from pony.orm import db_session
 
+from marathon_bot.general_func import btn
 from marathon_bot.handlers.main_menu_handler import main_menu
 from marathon_bot.models import Users, Marathon
 from marathon_bot.states.all_states_menu import CalculationOfKBZUMenu
@@ -10,12 +11,12 @@ from marathon_bot.states.all_states_menu import CalculationOfKBZUMenu
 data_kcal_welcome_menu = CallbackData('kcal', 'id')
 
 buttons_kcal_welcome_menu = [
-    InlineKeyboardButton(text='Необходимое количество ККАЛ',
+    InlineKeyboardButton(text=f'{btn("kcal")}',
                          callback_data=data_kcal_welcome_menu.new(id='kcal')),
-    InlineKeyboardButton(text='Готовые меню',
+    InlineKeyboardButton(text=f'{btn("ready_made_menu")}',
                          callback_data=data_kcal_welcome_menu.new(id='ready_made_menu')),
 ]
-paid_button = InlineKeyboardButton(text='Обучение составления меню',
+paid_button = InlineKeyboardButton(text=f'{btn("training")}',
                                    callback_data='training')
 
 

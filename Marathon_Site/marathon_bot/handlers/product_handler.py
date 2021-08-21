@@ -46,4 +46,3 @@ async def send_product_info(query: CallbackQuery, state: FSMContext):
     else:
         await query.message.edit_text(text, reply_markup=markup)
     await ProductsMenu.next()
-

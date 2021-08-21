@@ -1,12 +1,15 @@
 import csv
 import logging
+import os
 from pathlib import Path
 
 from django.contrib import admin
 from django.contrib.admin import AdminSite
+from django.core.checks import messages
 from django.core.files import File
 from django.forms import TextInput, Textarea
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse, path
 from django.utils.safestring import mark_safe
 
 from .models import *
@@ -347,6 +350,65 @@ class InviteCodeAdmin(admin.ModelAdmin):
     list_filter = ['marathon']
 
 
+class ButtonsTextAdmin(admin.ModelAdmin):
+    save_on_top = True
+
+    def add_view(self, request, form_url='', extra_context=None):
+        if self.model.objects.count() >= 1:
+            self.message_user(request, 'Нельзя добавить больше одной записи!',
+                              messages.ERROR)
+            return HttpResponseRedirect(reverse(f'admin:{self.model._meta.app_label}_buttonstext_changelist'))
+        return super().add_view(request, form_url, extra_context)
+
+
+class BotConfigAdmin(admin.ModelAdmin):
+    list_display = ['name_bot', 'start_bot']
+
+    def add_view(self, request, form_url='', extra_context=None):
+        if self.model.objects.count() >= 1:
+            self.message_user(request, 'Нельзя добавить больше одной записи!',
+                              messages.ERROR)
+            return HttpResponseRedirect(reverse(f'admin:{self.model._meta.app_label}_botconfig_changelist'))
+        return super().add_view(request, form_url, extra_context)
+
+    def start_bot(self, request):
+        return mark_safe(
+            f'<a class="button" href="{reverse("admin:start")}">Запустить</a>'
+            f'<a class="button" href="{reverse("admin:stop")}">Остановить</a>'
+            f'<a class="button" href="{reverse("admin:restart")}">Перезапустить</a>')
+
+        # Добавляем к существующим ссылкам в админке, ссылки на кнопки для их обработки
+
+    def get_urls(self):
+        urls = super().get_urls()
+        shard_urls = [path('#', self.admin_site.admin_view(self.start), name="start"),
+                      path('#', self.admin_site.admin_view(self.stop), name="stop"),
+                      path('#', self.admin_site.admin_view(self.restart), name="restart")
+                      ]
+
+        # Список отображаемых столбцов
+        return shard_urls + urls
+
+        # Обработка событий кнопок
+
+    def start(self, request):
+        text = 'systemctl start marathon_bot'
+        os.system(text)
+        return HttpResponseRedirect(reverse(f'admin:personal_area_botconfig_changelist'))
+
+    def stop(self, request):
+        text = 'systemctl stop marathon_bot'
+        os.system(text)
+        return HttpResponseRedirect(reverse(f'admin:personal_area_botconfig_changelist'))
+
+    def restart(self, request):
+        text = 'systemctl restart marathon_bot'
+        os.system(text)
+        return HttpResponseRedirect(reverse(f'admin:personal_area_botconfig_changelist'))
+
+    start_bot.short_description = 'Управление'
+
+
 class MyAdminSite(AdminSite):
 
     def get_app_list(self, request):
@@ -368,3 +430,5 @@ admin.site.register(CategoryTrainingMenu, CategoryTrainingMenuAdmin)
 admin.site.register(Product, ProductsAdmin)
 admin.site.register(Codes, CodesAdmin)
 admin.site.register(InviteCode, InviteCodeAdmin)
+admin.site.register(ButtonsText, ButtonsTextAdmin)
+admin.site.register(BotConfig, BotConfigAdmin)

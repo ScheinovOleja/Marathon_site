@@ -209,7 +209,7 @@ class Users(models.Model):
 
     def __str__(self):
         return f'{self.tg_id} - {self.last_name} {self.first_name}'
-    
+
     def delete(self, using=None, keep_parents=False):
         users_delete(self)
         super(Users, self).delete()
@@ -270,7 +270,8 @@ class DayReadyMadeMenu(models.Model):
         verbose_name_plural = 'Дни готовых меню'
 
     def __str__(self):
-        return f'{self.day} - {self.kcal_category} - {self.kcal_category.kcalcategoryreadymademenumarathon.marathon.name}'
+        return f'{self.day} - {self.kcal_category} - ' \
+               f'{self.kcal_category.kcalcategoryreadymademenumarathon.marathon.name}'
 
 
 class TimeDayReadyMadeMenu(models.Model):
@@ -360,3 +361,60 @@ class InviteCode(models.Model):
     class Meta:
         db_table = 'invite_code'
         verbose_name_plural = 'Коды приглашения'
+
+
+class ButtonsText(models.Model):
+    main_menu_tasks = models.CharField(max_length=50)
+    main_menu_user_info = models.CharField(max_length=50)
+    main_menu_kcal = models.CharField(max_length=50)
+    main_menu_get_scopes = models.CharField(max_length=50)
+    main_menu_buy_product = models.CharField(max_length=50)
+    marathon_switch = models.CharField(max_length=50)
+    back = models.CharField(max_length=50)
+    main_menu = models.CharField(max_length=50)
+    user_info_measurement_choice = models.CharField(max_length=50)
+    user_info_photos_choice = models.CharField(max_length=50)
+    stats_all = models.CharField(max_length=50)
+    kcal = models.CharField(max_length=50)
+    ready_made_menu = models.CharField(max_length=50)
+    training = models.CharField(max_length=50)
+    measurement_after = models.CharField(max_length=50)
+    measurement_before = models.CharField(max_length=50)
+    after = models.CharField(max_length=50)
+    before = models.CharField(max_length=50)
+    front_after = models.CharField(max_length=50)
+    sideways_after = models.CharField(max_length=50)
+    back_after = models.CharField(max_length=50)
+    front_before = models.CharField(max_length=50)
+    sideways_before = models.CharField(max_length=50)
+    back_before = models.CharField(max_length=50)
+    add_front_after = models.CharField(max_length=50)
+    add_sideways_after = models.CharField(max_length=50)
+    add_back_after = models.CharField(max_length=50)
+    add_front_before = models.CharField(max_length=50)
+    add_sideways_before = models.CharField(max_length=50)
+    add_back_before = models.CharField(max_length=50)
+    front_after_get = models.CharField(max_length=50)
+    sideways_after_get = models.CharField(max_length=50)
+    back_after_get = models.CharField(max_length=50)
+    front_before_get = models.CharField(max_length=50)
+    sideways_before_get = models.CharField(max_length=50)
+    back_before_get = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = 'btn_text'
+        verbose_name_plural = 'Подписи кнопок'
+        verbose_name = 'Подписи кнопок'
+
+    def __str__(self):
+        return "Подписи кнопок"
+
+
+class BotConfig(models.Model):
+    name_bot = models.CharField(max_length=30, verbose_name='Имя бота')
+    bot_token = models.CharField(max_length=50, verbose_name='Токен бота')
+    pay_token = models.CharField(max_length=30, verbose_name='Токен оплаты')
+
+    class Meta:
+        db_table = 'bot_cfg'
+        verbose_name_plural = 'Конфигурация бота'

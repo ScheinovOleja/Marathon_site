@@ -5,6 +5,7 @@ from aiogram.utils.exceptions import BadRequest
 from pony.orm import db_session
 
 from marathon_bot import MEDIA_ROOT
+from marathon_bot.general_func import btn
 from marathon_bot.handlers.main_menu_handler import back, main_menu
 from marathon_bot.models import Users, PhotoStates
 from marathon_bot.states.all_states_menu import UserInfoMenuPhotos
@@ -20,69 +21,69 @@ states = {"front_after": 'photo_front_after',
           "back_before": 'photo_back_before'}
 
 buttons_photos_choice_after = [
-    types.InlineKeyboardButton(text='Фото спереди',
+    types.InlineKeyboardButton(text=f'{btn("front_after")}',
                                callback_data=data_photos_choice.new(action='front_after', id='choice')),
-    types.InlineKeyboardButton(text='Фото сбоку',
+    types.InlineKeyboardButton(text=f'{btn("sideways_after")}',
                                callback_data=data_photos_choice.new(action='sideways_after', id='choice')),
-    types.InlineKeyboardButton(text='Фото сзади',
+    types.InlineKeyboardButton(text=f'{btn("back_after")}',
                                callback_data=data_photos_choice.new(action='back_after', id='choice'))
 ]
 
 buttons_photos_choice_before = [
-    types.InlineKeyboardButton(text='Фото спереди',
+    types.InlineKeyboardButton(text=f'{btn("front_before")}',
                                callback_data=data_photos_choice.new(action='front_before', id='choice')),
-    types.InlineKeyboardButton(text='Фото сбоку',
+    types.InlineKeyboardButton(text=f'{btn("sideways_before")}',
                                callback_data=data_photos_choice.new(action='sideways_before', id='choice')),
-    types.InlineKeyboardButton(text='Фото сзади',
+    types.InlineKeyboardButton(text=f'{btn("back_before")}',
                                callback_data=data_photos_choice.new(action='back_before', id='choice'))
 ]
 
 data_photos_get_add = CallbackData('post', 'id', 'action')
 
 buttons_photos_add_after = {
-    'photo_front_after': types.InlineKeyboardButton(text='Загрузить фото спереди ДО',
+    'photo_front_after': types.InlineKeyboardButton(text=f'{btn("add_front_after")}',
                                                     callback_data=data_photos_get_add.new(
                                                         action='add_front_after', id='add')),
-    'photo_sideways_after': types.InlineKeyboardButton(text='Загрузить фото сбоку ДО',
+    'photo_sideways_after': types.InlineKeyboardButton(text=f'{btn("add_sideways_after")}',
                                                        callback_data=data_photos_get_add.new(
                                                            action='add_sideways_after', id='add')),
-    'photo_back_after': types.InlineKeyboardButton(text='Загрузить фото сзади ДО',
+    'photo_back_after': types.InlineKeyboardButton(text=f'{btn("add_back_after")}',
                                                    callback_data=data_photos_get_add.new(action='add_back_after',
                                                                                          id='add'))
 }
 
 buttons_photos_add_before = {
-    'photo_front_before': types.InlineKeyboardButton(text='Загрузить фото спереди ПОСЛЕ',
+    'photo_front_before': types.InlineKeyboardButton(text=f'{btn("add_front_before")}',
                                                      callback_data=data_photos_get_add.new(
                                                          action='add_front_before', id='add')),
-    'photo_sideways_before': types.InlineKeyboardButton(text='Загрузить фото сбоку ПОСЛЕ',
+    'photo_sideways_before': types.InlineKeyboardButton(text=f'{btn("add_sideways_before")}',
                                                         callback_data=data_photos_get_add.new(
                                                             action='add_sideways_before', id='add')),
-    'photo_back_before': types.InlineKeyboardButton(text='Загрузить фото сзади ПОСЛЕ',
+    'photo_back_before': types.InlineKeyboardButton(text=f'{btn("add_back_before")}',
                                                     callback_data=data_photos_get_add.new(
                                                         action='add_back_before', id='add')),
 }
 
 buttons_photos_get_after = {
-    'photo_front_after': types.InlineKeyboardButton(text='Проверить фото спереди ДО',
+    'photo_front_after': types.InlineKeyboardButton(text=f'{btn("front_after_get")}',
                                                     callback_data=data_photos_get_add.new(action='front_after_get',
                                                                                           id='get')),
-    'photo_sideways_after': types.InlineKeyboardButton(text='Проверить фото сбоку ДО',
+    'photo_sideways_after': types.InlineKeyboardButton(text=f'{btn("sideways_after_get")}',
                                                        callback_data=data_photos_get_add.new(
                                                            action='sideways_after_get', id='get')),
-    'photo_back_after': types.InlineKeyboardButton(text='Проверить фото сзади ДО',
+    'photo_back_after': types.InlineKeyboardButton(text=f'{btn("back_after_get")}',
                                                    callback_data=data_photos_get_add.new(action='back_after_get',
                                                                                          id='get')),
 }
 
 buttons_photos_get_before = {
-    'photo_front_before': types.InlineKeyboardButton(text='Проверить фото спереди ПОСЛЕ',
+    'photo_front_before': types.InlineKeyboardButton(text=f'{btn("front_before_get")}',
                                                      callback_data=data_photos_get_add.new(action='front_before_get',
                                                                                            id='get')),
-    'photo_sideways_before': types.InlineKeyboardButton(text='Проверить фото сбоку ПОСЛЕ',
+    'photo_sideways_before': types.InlineKeyboardButton(text=f'{btn("sideways_before_get")}',
                                                         callback_data=data_photos_get_add.new(
                                                             action='sideways_before_get', id='get')),
-    'photo_back_before': types.InlineKeyboardButton(text='Проверить фото сзади ПОСЛЕ',
+    'photo_back_before': types.InlineKeyboardButton(text=f'{btn("back_before_get")}',
                                                     callback_data=data_photos_get_add.new(action='back_before_get',
                                                                                           id='get')),
 }
@@ -94,10 +95,10 @@ async def send_menu_user_info_photos(query: types.CallbackQuery, state: FSMConte
     with db_session:
         user = await Users.get_user(tg_id=query.from_user.id, marathon_id=state_data['marathon_id'])
         if user.marathon.send_measurements_after:
-            markup.add(types.InlineKeyboardButton(text='Фото ДО',
+            markup.add(types.InlineKeyboardButton(text=f'{btn("after")}',
                                                   callback_data='after'))
         if user.marathon.send_measurements_before:
-            markup.add(types.InlineKeyboardButton(text='Фото ПОСЛЕ',
+            markup.add(types.InlineKeyboardButton(text=f'{btn("before")}',
                                                   callback_data='before'))
     markup.add(back, main_menu)
     await UserInfoMenuPhotos.first()
