@@ -35,6 +35,8 @@ async def mailing(request):
     text = f'{message}\n\n\nНажмите /start, чтобы выйти в главное меню!'
     if request.FILES:
         path = MEDIA_ROOT + '/tmp/'
+        if not os.path.isdir(path):
+            os.mkdir(path)
         file_from_form = request.FILES['file']
         file_from_form.name = re.sub('\W+', '.', file_from_form.name)
         with open(f'{path}{file_from_form.name}', 'wb') as file_to_tmp:
