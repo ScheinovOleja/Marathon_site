@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+import subprocess
 from pathlib import Path
 
 from django.contrib import admin
@@ -28,6 +29,8 @@ class UsersAdmin(admin.ModelAdmin):
                                                                                      'get_bzu')]
     readonly_fields = ['get_photo', 'get_measurement', 'get_bzu', 'marathon', 'sex', 'username']
     list_display_links = ['tg_id', 'marathon']
+    list_per_page = 50
+    list_max_show_all = 200
 
     def import_csv(self, request, queryset):
         try:
@@ -412,18 +415,18 @@ class BotConfigAdmin(admin.ModelAdmin):
         # Обработка событий кнопок
 
     def start(self, request):
-        text = 'systemctl start marathon_bot'
-        os.system(text)
+        start_bot = subprocess.run(["systemctl", "start", "marathon_bot.service"])
+        print(start_bot.returncode)
         return HttpResponseRedirect(reverse(f'admin:personal_area_botconfig_changelist'))
 
     def stop(self, request):
-        text = 'systemctl stop marathon_bot'
-        os.system(text)
+        stop_bot = subprocess.run(["systemctl", "stop", "marathon_bot.service"])
+        print(stop_bot.returncode)
         return HttpResponseRedirect(reverse(f'admin:personal_area_botconfig_changelist'))
 
     def restart(self, request):
-        text = 'systemctl restart marathon_bot'
-        os.system(text)
+        restart_bot = subprocess.run(["systemctl", "restart", "marathon_bot.service"])
+        print(restart_bot.returncode)
         return HttpResponseRedirect(reverse(f'admin:personal_area_botconfig_changelist'))
 
     start_bot.short_description = 'Управление'
