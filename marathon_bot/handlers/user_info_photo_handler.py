@@ -148,9 +148,11 @@ async def send_menu_user_info_photos_add_get(query: types.CallbackQuery, state: 
             await state.update_data({'callback': query.data})
         if 'before' in choice_data:
             try:
-                if getattr(photo, callback):
+                text_btn = getattr(photo, callback)
+                if text_btn != '':
                     button_add = buttons_photos_add_before[callback]
-                    button_add.text = button_add.text.replace('Загрузить', 'Поменять')
+                    text = btn(f'replace_{button_add.callback_data.split("post:add:")[1]}')
+                    button_add.text = text
                     markup.add(button_add)
                     markup.add(buttons_photos_get_before[callback])
                 else:
@@ -159,9 +161,11 @@ async def send_menu_user_info_photos_add_get(query: types.CallbackQuery, state: 
                 markup.add(buttons_photos_add_before[callback])
         if 'after' in choice_data:
             try:
-                if getattr(photo, callback):
+                text_btn = getattr(photo, callback)
+                if text_btn != '':
                     button_add = buttons_photos_add_after[callback]
-                    button_add.text = button_add.text.replace('Загрузить', 'Поменять')
+                    text = btn(f'replace_{button_add.callback_data.split("post:add:")[1]}')
+                    button_add.text = text
                     markup.add(button_add)
                     markup.add(buttons_photos_get_after[callback])
                 else:

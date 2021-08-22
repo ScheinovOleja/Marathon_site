@@ -67,6 +67,7 @@ class Marathon(models.Model):
     send_measurements_after = models.BooleanField(default=False, verbose_name='Отправка замеров ПОСЛЕ')
     close = models.BooleanField(default=False, verbose_name='Закрыт ли марафон')
     price = models.IntegerField(default=0, validators=[validate_price], verbose_name="Стоимость марафона")
+    count_users = models.IntegerField(default=0, verbose_name="Количество участников марафона")
 
     class Meta:
         db_table = 'marathon'
@@ -81,14 +82,14 @@ class Marathon(models.Model):
 
 
 class Measurement(models.Model):
-    waist_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ДО')
-    breast_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ДО')
-    femur_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ДО')
-    weight_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ДО')
-    waist_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ПОСЛЕ')
-    breast_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров талии ПОСЛЕ')
-    femur_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров бедер ПОСЛЕ')
-    weight_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров веса ПОСЛЕ')
+    waist_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ПОСЛЕ')
+    breast_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ПОСЛЕ')
+    femur_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ПОСЛЕ')
+    weight_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ПОСЛЕ')
+    waist_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ДО')
+    breast_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров талии ДО')
+    femur_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров бедер ДО')
+    weight_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров веса ДО')
 
     class Meta:
         db_table = 'measurement'
@@ -147,9 +148,12 @@ class TasksUsers(models.Model):
 
 
 class BZUUsers(models.Model):
-    proteins = models.IntegerField()
-    fats = models.IntegerField()
-    carbohydrates = models.IntegerField()
+    proteins = models.IntegerField(verbose_name='Белки')
+    fats = models.IntegerField(verbose_name='Жиры')
+    carbohydrates = models.IntegerField(verbose_name='Углеводы')
+
+    def __str__(self):
+        return f"{self.users.username}"
 
     class Meta:
         db_table = 'bzu_users'
@@ -199,9 +203,10 @@ class Users(models.Model):
     kcal = models.IntegerField(default=0, null=True)
     is_enter_invite_code = models.BooleanField(blank=True, null=True, verbose_name='Ввел ли пригласительный код?')
     marathon = models.ForeignKey(Marathon, models.DO_NOTHING, verbose_name='Марафон пользователя')
-    measurement = models.ForeignKey(Measurement, models.DO_NOTHING, blank=True, null=True)
-    photos = models.ForeignKey(Photo, models.DO_NOTHING, blank=True, null=True)
-    bzu = models.ForeignKey(BZUUsers, models.DO_NOTHING, blank=True, null=True)
+    measurement = models.OneToOneField(Measurement, models.DO_NOTHING, blank=True, null=True)
+    photos = models.OneToOneField(Photo, models.DO_NOTHING, blank=True, null=True)
+    bzu = models.OneToOneField(BZUUsers, models.DO_NOTHING, blank=True, null=True)
+    is_pay = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'users'
@@ -394,6 +399,14 @@ class ButtonsText(models.Model):
     add_front_before = models.CharField(max_length=50)
     add_sideways_before = models.CharField(max_length=50)
     add_back_before = models.CharField(max_length=50)
+
+    replace_add_front_after = models.CharField(max_length=50)
+    replace_add_sideways_after = models.CharField(max_length=50)
+    replace_add_back_after = models.CharField(max_length=50)
+    replace_add_front_before = models.CharField(max_length=50)
+    replace_add_sideways_before = models.CharField(max_length=50)
+    replace_add_back_before = models.CharField(max_length=50)
+
     front_after_get = models.CharField(max_length=50)
     sideways_after_get = models.CharField(max_length=50)
     back_after_get = models.CharField(max_length=50)
@@ -411,9 +424,10 @@ class ButtonsText(models.Model):
 
 
 class BotConfig(models.Model):
-    name_bot = models.CharField(max_length=30, verbose_name='Имя бота')
-    bot_token = models.CharField(max_length=50, verbose_name='Токен бота')
-    pay_token = models.CharField(max_length=30, verbose_name='Токен оплаты')
+    name_bot = models.CharField(max_length=30, default='', verbose_name='Имя бота')
+    bot_token = models.CharField(max_length=50, default='', verbose_name='Токен бота')
+    pay_token = models.CharField(max_length=30, default='', verbose_name='Токен оплаты')
+    admin_id = models.IntegerField(default=0, verbose_name='id админа(можно получить у @username_to_id_bot)')
 
     class Meta:
         db_table = 'bot_cfg'

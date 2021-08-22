@@ -35,4 +35,4 @@ logging.basicConfig(level=logging.ERROR, filename='logs/log_error.log')
 logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+MEDIA_ROOT = os.path.join(BASE_DIR, "Marathon_Site/media/")

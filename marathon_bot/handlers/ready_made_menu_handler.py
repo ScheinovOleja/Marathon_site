@@ -31,12 +31,12 @@ async def send_all_day(query: types.CallbackQuery, state: FSMContext):
     markup = types.InlineKeyboardMarkup()
     data = await state.get_data()
     try:
-        category_kcal = KcalCategoryReadyMadeMenu.get(id=data['callback'].split('_')[1])
-        await state.update_data({'callback': data['callback']})
+        category_kcal = KcalCategoryReadyMadeMenu.get(id=data['category'].split('_')[1])
+        await state.update_data({'category': data['category']})
     except KeyError:
         category_kcal = KcalCategoryReadyMadeMenu.get(id=query.data.split('_')[1])
-        await state.update_data({'callback': query.data})
-    all_day = DayReadyMadeMenu.select().where(kcal_category=category_kcal.id)[:]
+        await state.update_data({'category': query.data})
+    all_day = DayReadyMadeMenu.select().where(kcal_category=category_kcal.id).order_by(DayReadyMadeMenu.id)[:]
     for day in all_day:
         markup.add(types.InlineKeyboardButton(text=f'{day.day}', callback_data=f'Day_{day.id}'))
     markup.add(back, main_menu)
@@ -49,11 +49,12 @@ async def send_time_day(query: types.CallbackQuery, state: FSMContext):
     markup = types.InlineKeyboardMarkup()
     data = await state.get_data()
     try:
-        all_times = TimeDayReadyMadeMenu.select().where(day=data['callback'].split('_')[1])
-        await state.update_data({'callback': data['callback']})
+        all_times = TimeDayReadyMadeMenu.select().where(day=data['day'].split('_')[1]).order_by(
+            TimeDayReadyMadeMenu.id)
+        await state.update_data({'day': data['day']})
     except KeyError:
-        all_times = TimeDayReadyMadeMenu.select().where(day=query.data.split('_')[1])
-        await state.update_data({'callback': query.data})
+        all_times = TimeDayReadyMadeMenu.select().where(day=query.data.split('_')[1]).order_by(TimeDayReadyMadeMenu.id)
+        await state.update_data({'day': query.data})
     for time in all_times:
         markup.add(types.InlineKeyboardButton(text=f'{time.time_day}', callback_data=f'Time_{time.id}'))
     markup.add(back, main_menu)
@@ -66,11 +67,11 @@ async def send_ready_made_menu_list(query: types.CallbackQuery, state: FSMContex
     markup = types.InlineKeyboardMarkup()
     data = await state.get_data()
     try:
-        ready_made_menu_list = ReadyMadeMenu.select(time_day=data['callback'].split("_")[1])
-        await state.update_data({'callback': data['callback']})
+        ready_made_menu_list = ReadyMadeMenu.select(time_day=data['time_day'].split("_")[1]).order_by(ReadyMadeMenu.id)
+        await state.update_data({'time_day': data['time_day']})
     except KeyError:
-        ready_made_menu_list = ReadyMadeMenu.select(time_day=query.data.split("_")[1])
-        await state.update_data({'callback': query.data})
+        ready_made_menu_list = ReadyMadeMenu.select(time_day=query.data.split("_")[1]).order_by(ReadyMadeMenu.id)
+        await state.update_data({'time_day': query.data})
     for menu in ready_made_menu_list:
         markup.add(types.InlineKeyboardButton(text=f'{menu.name_menu}', callback_data=f'Menu_{menu.id}'))
     markup.add(back, main_menu)

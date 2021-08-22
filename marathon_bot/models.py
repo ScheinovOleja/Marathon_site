@@ -100,6 +100,7 @@ class Marathon(db.Entity):
                                  column='category_id')
     codes = Optional('Codes', nullable=True, cascade_delete=True)
     invite_code = Optional('InviteCode', nullable=True, reverse='marathon')
+    count_users = Required(int)
 
     @staticmethod
     async def get_marathon(marathon_id):
@@ -148,6 +149,7 @@ class Users(db.Entity):
     photos = Optional(Photo, nullable=True, reverse='user', column='photos_id', cascade_delete=True)
     bzu = Optional(BZUUsers, nullable=True, reverse='user', column='bzu_id', cascade_delete=True)
     entered_codes = Set(Codes, nullable=True, reverse='user', column='codes_id')
+    is_pay = Optional(bool)
 
     @staticmethod
     async def get_user(tg_id, marathon_id):
@@ -263,6 +265,12 @@ class ButtonsText(db.Entity):
     add_front_before = Required(str)
     add_sideways_before = Required(str)
     add_back_before = Required(str)
+    replace_add_front_after = Required(str)
+    replace_add_sideways_after = Required(str)
+    replace_add_back_after = Required(str)
+    replace_add_front_before = Required(str)
+    replace_add_sideways_before = Required(str)
+    replace_add_back_before = Required(str)
     front_after_get = Required(str)
     sideways_after_get = Required(str)
     back_after_get = Required(str)
@@ -276,6 +284,7 @@ class BotConfig(db.Entity):
     name_bot = Required(str)
     bot_token = Required(str)
     pay_token = Required(str)
+    admin_id = Required(int)
 
 
 db.generate_mapping(create_tables=True)

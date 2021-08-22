@@ -34,18 +34,32 @@ class UsersAdmin(admin.ModelAdmin):
             file_path = f"{Path(__file__).resolve().parent.parent}/media/csv_files"
             if not os.path.isdir(file_path):
                 os.mkdir(file_path)
+            data = [
+                ['tg_id', 'tg_nickname', 'Имя', 'Фамилия', 'Возраст', 'Вес', 'Рост', 'Цель', 'ККАЛ', 'Пол',
+                 'Кол-во баллов', 'Грудь ДО', 'Талия ДО', 'Бедра ДО', 'Вес ДО', 'Грудь ПОСЛЕ', 'Талия ПОСЛЕ',
+                 'Бедра ПОСЛЕ', 'Вес ПОСЛЕ', 'Белки', 'Жиры', 'Углеводы']
+            ]
             with open(f'{file_path}/file_csv.csv', 'w', encoding='utf-8') as csv_file:
-                data = [['tg_id', 'tg_nickname', 'Имя', 'Фамилия', 'Возраст', 'Пол', 'Кол-во баллов', 'Грудь ДО',
-                         'Талия ДО', 'Бедра ДО', 'Вес ДО', 'Грудь ПОСЛЕ', 'Талия ПОСЛЕ', 'Бедра ПОСЛЕ', 'Вес ПОСЛЕ']]
                 for user in queryset:
                     writer = csv.writer(csv_file, delimiter=';')
-                    if not user.measurement:
-                        continue
-                    data.append([user.tg_id, user.username, user.first_name, user.last_name, user.age, user.sex,
-                                 user.scopes, user.measurement.waist_before, user.measurement.breast_before,
-                                 user.measurement.femur_before, user.measurement.weight_before,
-                                 user.measurement.waist_after, user.measurement.breast_after,
-                                 user.measurement.femur_after, user.measurement.weight_after])
+                    purpose = 'Похудение' if user.purpose == '-' else 'Поддержание веса' if user.purpose == '=' else \
+                        'Набор массы' if user.purpose == '+' else ""
+                    data.append(
+                        [user.tg_id, user.username, user.first_name, user.last_name, user.age, user.weight, user.height,
+                         purpose, user.kcal, user.sex,
+                         user.scopes, user.measurement.waist_before if user.measurement else '-',
+                         user.measurement.breast_before if user.measurement else '-',
+                         user.measurement.femur_before if user.measurement else '-',
+                         user.measurement.weight_before if user.measurement else '-',
+                         user.measurement.waist_after if user.measurement else '-',
+                         user.measurement.breast_after if user.measurement else '-',
+                         user.measurement.femur_after if user.measurement else '-',
+                         user.measurement.weight_after if user.measurement else '-',
+                         user.bzu.proteins if user.bzu else '-',
+                         user.bzu.fats if user.bzu else '-',
+                         user.bzu.carbohydrates if user.bzu else '-',
+                         ]
+                    )
                 for row in data:
                     writer.writerow(row)
             f = open(f'{file_path}/file_csv.csv', 'r', encoding='utf-8')
@@ -87,18 +101,19 @@ class PhotoAdmin(admin.ModelAdmin):
     readonly_fields = ['user_change', 'front_before', 'sideways_before', 'back_before', 'front_after',
                        'sideways_after', 'back_after']
     list_display = ['user_display']
+    list_filter = ['users__marathon__name']
 
     def user_display(self, request):
-        for user in request.users_set.all():
-            url = f'<b><a href="/admin/personal_area/photo/{user.photos.id}/change/" target="_blank">' \
-                  f'{user.first_name} {user.last_name} - {user.marathon.name}</a></b>'
-            return mark_safe(url)
+        user = request.users
+        url = f'<b><a href="/admin/personal_area/photo/{user.photos.id}/change/">' \
+              f'{user.first_name} {user.last_name} - {user.marathon.name}</a></b>'
+        return mark_safe(url)
 
     def user_change(self, request):
-        for user in request.users_set.all():
-            url = f'<b><a href="/admin/personal_area/users/{user.id}/change/" target="_blank">{user.first_name} ' \
-                  f'{user.last_name} - {user.marathon.name}</a></b>'
-            return mark_safe(url)
+        user = request.users
+        url = f'<b><a href="/admin/personal_area/users/{user.id}/change/" target="_blank">{user.first_name} ' \
+              f'{user.last_name} - {user.marathon.name}</a></b>'
+        return mark_safe(url)
 
     user_display.short_description = 'Пользователь:'
     user_change.short_description = 'Пользователь:'
@@ -152,18 +167,19 @@ class MeasurementAdmin(admin.ModelAdmin):
     readonly_fields = ['user_change', 'waist_before', 'breast_before', 'femur_before', 'weight_before',
                        'waist_after', 'breast_after', 'femur_after', 'weight_after']
     list_display = ['user_display']
+    list_filter = ['users__marathon__name']
 
     def user_display(self, request):
-        for user in request.users_set.all():
-            url = f'<b><a href="/admin/personal_area/measurement/{user.measurement.id}/change/" target="_blank">' \
-                  f'{user.first_name} {user.last_name} - {user.marathon.name}</a></b>'
-            return mark_safe(url)
+        user = request.users
+        url = f'<b><a href="/admin/personal_area/measurement/{user.measurement.id}/change/">' \
+              f'{user.first_name} {user.last_name} - {user.marathon.name}</a></b>'
+        return mark_safe(url)
 
     def user_change(self, request):
-        for user in request.users_set.all():
-            url = f'<b><a href="/admin/personal_area/users/{user.id}/change/" target="_blank">{user.first_name} ' \
-                  f'{user.last_name} - {user.marathon.name}</a></b>'
-            return mark_safe(url)
+        user = request.users
+        url = f'<b><a href="/admin/personal_area/users/{user.id}/change/" target="_blank">{user.first_name} ' \
+              f'{user.last_name} - {user.marathon.name}</a></b>'
+        return mark_safe(url)
 
     user_display.short_description = mark_safe('<b>Пользователь</b>')
     user_change.short_description = mark_safe('<b>Пользователь</b>')
@@ -171,9 +187,11 @@ class MeasurementAdmin(admin.ModelAdmin):
 
 class MarathonAdmin(admin.ModelAdmin):
     fields = ['name', 'description', 'date_start', 'date_end', 'send_measurements_before', 'send_measurements_after',
-              'close', 'price']
-    list_display = ['name', 'date_start', 'date_end', 'send_measurements_before', 'send_measurements_after', 'close']
-    list_editable = ['date_start', 'date_end', 'send_measurements_before', 'send_measurements_after', 'close']
+              'close', 'price', 'count_users']
+    list_display = ['name', 'date_start', 'date_end', 'send_measurements_before', 'send_measurements_after', 'close',
+                    'count_users']
+    list_editable = ['date_start', 'date_end', 'send_measurements_before', 'send_measurements_after', 'close',
+                     'count_users']
 
     def delete_queryset(self, request, queryset):
         for marathon in queryset:
@@ -240,7 +258,23 @@ class ProductsAdmin(admin.ModelAdmin):
 
 
 class BZUAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['user_display', 'proteins', 'fats', 'carbohydrates']
+    fields = ['user_change', 'proteins', 'fats', 'carbohydrates']
+    readonly_fields = ['user_change']
+    list_filter = ['users__marathon__name']
+
+    def user_display(self, request):
+        url = f'<b><a href="/admin/personal_area/bzuusers/{request.users.photos.id}/change/">' \
+              f'{request.users.first_name} {request.users.last_name} - {request.users.marathon.name}</a></b>'
+        return mark_safe(url)
+
+    def user_change(self, request):
+        url = f'<b><a href="/admin/personal_area/users/{request.users.id}/change/" target="_blank">' \
+              f'{request.users.first_name} {request.users.last_name} - {request.users.marathon.name}</a></b>'
+        return mark_safe(url)
+
+    user_display.short_description = 'Пользователь'
+    user_change.short_description = 'Пользователь:'
 
 
 class CodesAdmin(admin.ModelAdmin):

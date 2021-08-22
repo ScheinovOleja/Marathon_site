@@ -14,18 +14,24 @@ async def back_to_kcal_welcome(query: types.CallbackQuery, state: FSMContext):
 
 async def back_to_send_category(query: types.CallbackQuery, state: FSMContext):
     await ReadyMadeMenuState.previous()
+    data = await state.get_data()
+    await state.set_data({'marathon_id': data['marathon_id']})
     return await send_category_ready_made_menu(query, state)
 
 
 async def back_to_all_day(query: types.CallbackQuery, state: FSMContext):
     await ReadyMadeMenuState.previous()
     await ReadyMadeMenuState.previous()
+    data = await state.get_data()
+    await state.set_data({'marathon_id': data['marathon_id'], 'category': data['category']})
     return await send_all_day(query, state)
 
 
 async def back_to_time_day(query: types.CallbackQuery, state: FSMContext):
     await ReadyMadeMenuState.previous()
     await ReadyMadeMenuState.previous()
+    data = await state.get_data()
+    await state.set_data({'marathon_id': data['marathon_id'], 'category': data['category'], 'day': data['day']})
     return await send_time_day(query, state)
 
 

@@ -2,12 +2,11 @@ import os
 import re
 from datetime import datetime
 
+from Marathon_Site.settings import MEDIA_ROOT
 from aiogram import Bot, types
 from aiogram.types import ChatActions
 from aiogram.utils.exceptions import BotBlocked, CantTalkWithBots
 from asgiref.sync import sync_to_async
-
-from Marathon_Site.settings import MEDIA_ROOT
 
 from personal_area.models import AllUsers, Users, BotConfig
 
@@ -95,9 +94,5 @@ async def mailing(request):
             print(exc)
     if path:
         os.system(f'rm {path}{file_from_form.name}')
-    try:
-        await bot.send_message(438861723, f'Сообщения пришли {i} людям.\nВремя, ушедшее на рассылку - '
-                                          f'{datetime.now() - start_time}')
-    except Exception:
-        await bot.send_message(715845455, f'Сообщения пришли {i} людям.\nВремя, ушедшее на рассылку - '
-                                          f'{datetime.now() - start_time}')
+    await bot.send_message(bot_cfg.admin_id, f'Сообщения пришли {i} людям.\nВремя, ушедшее на рассылку - '
+                                             f'{datetime.now() - start_time}')
