@@ -415,18 +415,15 @@ class BotConfigAdmin(admin.ModelAdmin):
         # Обработка событий кнопок
 
     def start(self, request):
-        start_bot = subprocess.run(["systemctl", "start", "marathon_bot.service"])
-        print(start_bot.returncode)
+        start_bot = subprocess.run(["systemctl", "start", "marathon_bot"])
         return HttpResponseRedirect(reverse(f'admin:personal_area_botconfig_changelist'))
 
     def stop(self, request):
-        stop_bot = subprocess.run(["systemctl", "stop", "marathon_bot.service"])
-        print(stop_bot.returncode)
+        stop_bot = subprocess.run(["systemctl", "stop", "marathon_bot"])
         return HttpResponseRedirect(reverse(f'admin:personal_area_botconfig_changelist'))
 
     def restart(self, request):
-        restart_bot = subprocess.run(["systemctl", "restart", "marathon_bot.service"])
-        print(restart_bot.returncode)
+        restart_bot = subprocess.run(["systemctl", "restart", "marathon_bot"])
         return HttpResponseRedirect(reverse(f'admin:personal_area_botconfig_changelist'))
 
     start_bot.short_description = 'Управление'
