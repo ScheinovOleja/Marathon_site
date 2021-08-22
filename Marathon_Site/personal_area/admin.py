@@ -264,7 +264,7 @@ class BZUAdmin(admin.ModelAdmin):
     list_filter = ['users__marathon__name']
 
     def user_display(self, request):
-        url = f'<b><a href="/admin/personal_area/bzuusers/{request.users.id}/change/">' \
+        url = f'<b><a href="/admin/personal_area/bzuusers/{request.users.bzu.id}/change/">' \
               f'{request.users.first_name} {request.users.last_name} - {request.users.marathon.name}</a></b>'
         return mark_safe(url)
 
