@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/var/www/Marathon_site/Marathon_Site/")
+sys.path.append("/var/www/Marathon_site/")
 
 from aiogram import executor
 
