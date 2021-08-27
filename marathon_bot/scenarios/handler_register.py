@@ -146,7 +146,7 @@ async def register_marathon(query: types.CallbackQuery, state: FSMContext):
             first_name='.',
             last_name='.',
             scopes=0,
-            marathon=marathon,
+            marathon_id=marathon.id,
             is_pay=False,
         )
         commit()
