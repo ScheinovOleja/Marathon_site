@@ -31,16 +31,6 @@ async def send_welcome(message: types.Message, action='send'):
                 if any([user for user in users if user.marathon == marathon]):
                     text += " ✅️"
                 if marathon.price > 0:
-                    if marathon.count_users <= 0:
-                        if ' ✅️' in text:
-                            pass
-                        else:
-                            return await message.edit_text(
-                                "⚡️⚡️⚡️ К сожалению, набор на марафон уже закончен, так как все места на него уже "
-                                "заняты.\n"
-                                "Ожидайте запуска следующего марафона 🤗\n"
-                                "🍓 Ждите новостей в моём инстаграме: instagram.com/vkus_viki\n\n"
-                                "Нажмите /start для выхода в меню выбора марафона!")
                     text += " 💎"
                     text += f" Осталось {marathon.count_users} мест!"
                 else:
@@ -97,6 +87,12 @@ async def check_register_from_marathon(query: types.CallbackQuery, state: FSMCon
         )
         await Register.next()
         await state.update_data({'marathon_id': marathon.id})
+    elif marathon.count_users <= 0:
+        return await query.message.edit_text(
+            "⚡️⚡️⚡️ К сожалению, набор на марафон уже закончен, так как все места на него уже заняты.\n"
+            "Ожидайте запуска следующего марафона 🤗\n"
+            "🍓 Ждите новостей в моём инстаграме: instagram.com/vkus_viki\n\n"
+            "Нажмите /start для выхода в меню выбора марафона!")
     else:
         await MainMenu.main_menu.set()
         await state.set_data({'marathon_id': marathon.id})
