@@ -93,7 +93,7 @@ class Marathon(db.Entity):
     price = Optional(int, sql_default=0)
     category_task = Set(CategoryTasks, nullable=True, reverse='marathon', column='category_id')
     product = Optional(Product, nullable=True, cascade_delete=True)
-    user = Optional("Users", reverse='marathon')
+    user = Set("Users", reverse='marathon')
     kcal_category_ready_made = Set('KcalCategoryReadyMadeMenu', nullable=True, reverse='marathon',
                                    column='category_id')
     category_training_menu = Set('CategoryTrainingMenu', nullable=True, reverse='marathon',
