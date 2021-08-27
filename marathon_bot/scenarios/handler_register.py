@@ -61,14 +61,20 @@ async def check_register_from_marathon(query: types.CallbackQuery, state: FSMCon
     cur = con.cursor(cursor_factory=NamedTupleCursor)
     cur.execute(
         f"""
-            SELECT pam.id, pau.first_name, pau.last_name
+            SELECT pam.id, pam.count_users, pau.first_name, pau.last_name
             FROM marathon as pam
             INNER JOIN users as pau ON pam.id = pau.marathon_id
             WHERE pau.tg_id = {query.from_user.id} AND pam.name = \'{query.data.split("_marathon")[0]}\'
         """
     )
     marathon = cur.fetchone()
-    if not marathon or (marathon.first_name == '.' and marathon.last_name == '.'):
+    if marathon.count_users <= 0:
+        return await query.message.edit_text(
+            "⚡️⚡️⚡️ К сожалению, набор на марафон уже закончен, так как все места на него уже заняты.\n"
+            "Ожидайте запуска следующего марафона 🤗\n"
+            "🍓 Ждите новостей в моём инстаграме: instagram.com/vkus_viki\n\n"
+            "Нажмите /start для выхода в меню выбора марафона!")
+    elif not marathon or (marathon.first_name == '.' and marathon.last_name == '.'):
         markup = types.InlineKeyboardMarkup()
         markup.add(
             types.InlineKeyboardButton(
@@ -87,12 +93,6 @@ async def check_register_from_marathon(query: types.CallbackQuery, state: FSMCon
         )
         await Register.next()
         await state.update_data({'marathon_id': marathon.id})
-    elif marathon.count_users <= 0:
-        return await query.message.edit_text(
-            "⚡️⚡️⚡️ К сожалению, набор на марафон уже закончен, так как все места на него уже заняты.\n"
-            "Ожидайте запуска следующего марафона 🤗\n"
-            "🍓 Ждите новостей в моём инстаграме: instagram.com/vkus_viki\n\n"
-            "Нажмите /start для выхода в меню выбора марафона!")
     else:
         await MainMenu.main_menu.set()
         await state.set_data({'marathon_id': marathon.id})
