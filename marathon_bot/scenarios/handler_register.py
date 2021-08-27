@@ -139,6 +139,7 @@ async def register_marathon(query: types.CallbackQuery, state: FSMContext):
         )
     else:
         state_data = await state.get_data()
+        breakpoint()
         Users(
             tg_id=query.from_user.id,
             username=query.from_user.username,
