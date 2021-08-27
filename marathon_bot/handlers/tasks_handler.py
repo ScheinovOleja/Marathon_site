@@ -18,7 +18,8 @@ async def send_category_tasks(query: types.CallbackQuery, state: FSMContext):
     markup = types.InlineKeyboardMarkup()
     text = 'Выберите категорию:'
     if not marathon.category_task:
-        text = 'К сожалению, на данный момент еще нет ни одной категории!'
+        text = 'К сожалению, на данный момент нет заданий на выполнение! Ждите новостей по новым заданиям в моём ' \
+               'инстаграме: instagram.com/vkus_viki'
     else:
         for category in marathon.category_task:
             markup.add(types.InlineKeyboardButton(text=f'{category.category}', callback_data=f'Category_{category.id}'))
@@ -59,7 +60,7 @@ async def send_task_info(query: types.CallbackQuery, state: FSMContext):
     task = Tasks.get(id=query.data.split('_')[1])
     text = f'{task.name}\n\n' \
            f'{task.description}\n\n' \
-           f'Дата-время закрытия задания - {task.date_stop.strftime("%d-%m-%Y - %H:%M:%S")}'
+           f'Дата закрытия задания: {task.date_stop.strftime("%H:%M:%S %d.%m.%Y")}'
     markup.add(back, main_menu)
     if task.image:
         await send_photo(query, text, markup, task.image)

@@ -199,7 +199,29 @@ async def get_photo_from_db(query: types.CallbackQuery, state: FSMContext):
 
 async def send_menu_wait_photo_from_user(query: types.CallbackQuery, state: FSMContext):
     markup = types.InlineKeyboardMarkup(row_width=2)
-    text = "Вы должны сделать такую же фотографию"
+    data = await state.get_data()
+    if data['callback_1'] == 'before':
+        time = 'ДО'
+    elif data['callback_1'] == 'after':
+        time = 'ПОСЛЕ'
+    else:
+        time = ''
+    if 'front' in data['callback_2']:
+        place = 'спереди'
+    elif 'sideways' in data['callback_2']:
+        place = 'сбоку'
+    elif 'back' in data['callback_2']:
+        place = 'сзади'
+    else:
+        place = ''
+    text = f"""Отправьте фотографию {place} "{time}". Лицо можете прикрыть листом с надписью или смайликом. Пример фотографии
+     вы можете увидеть ниже.
+     \n❗️ Наденьте белье или купальник, чтобы было видно вашу фигуру.
+     \n❗️ Делайте фотографию с хорошим освещением и обязательно в полный рост!
+     \n❗️ Обратите внимание на позицию тела: ноги на ширине плеч, тело расслаблено. Живот не втягивать и не выталкивать, 
+     таз не отставлять назад.
+     \n❗️ В руках держите листок бумаги на котором будет надпись от руки: ВКУС ТЕЛА с Викой ДД.ММ.ГГ
+     \nЕсли все условия выполнены, то отправляйте фотографию сюда и не забудьте перепроверить"""
     markup.add(back, main_menu)
     with db_session:
         try:
