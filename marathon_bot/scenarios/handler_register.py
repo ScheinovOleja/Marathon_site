@@ -68,7 +68,7 @@ async def check_register_from_marathon(query: types.CallbackQuery, state: FSMCon
         """
     )
     marathon = cur.fetchone()
-    count_users = await Marathon.get_marathon(marathon_id=query.data.split("_marathon")[0])
+    count_users = Marathon.get(name=query.data.split("_marathon")[0])
     if count_users.count_users <= 0:
         return await query.message.edit_text(
             "⚡️⚡️⚡️ К сожалению, набор на марафон уже закончен, так как все места на него уже заняты.\n"
