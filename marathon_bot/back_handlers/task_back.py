@@ -8,7 +8,7 @@ from marathon_bot.states.all_states_menu import TaskMenu
 async def back_to_category(query: CallbackQuery, state: FSMContext):
     await TaskMenu.previous()
     data = await state.get_data()
-    await state.set_data({'marathon_id': data['marathon_id'])
+    await state.set_data({'marathon_id': data['marathon_id']})
     return await send_category_tasks(query, state)
 
 
