@@ -21,7 +21,8 @@ async def send_category_tasks(query: types.CallbackQuery, state: FSMContext):
         text = 'К сожалению, на данный момент нет заданий на выполнение! Ждите новостей по новым заданиям в моём ' \
                'инстаграме: instagram.com/vkus_viki'
     else:
-        for category in marathon.category_task.order_by(marathon.category_task.id):
+        for category in marathon.category_task:
+            breakpoint()
             markup.add(types.InlineKeyboardButton(text=f'{category.category}', callback_data=f'Category_{category.id}'))
     markup.add(main_menu)
     await TaskMenu.first()

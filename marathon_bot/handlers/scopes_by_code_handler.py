@@ -36,7 +36,6 @@ async def get_code(message: types.Message, state: FSMContext):
                 user = await Users.get_user(tg_id=message.from_user.id, marathon_id=state_data['marathon_id'])
                 if any([code_task.id == completed.id for completed in user.completed_tasks]):
                     text = 'Вы уже выполнили это задание! Вкусняшек вы не получите!'
-
                 else:
                     user.scopes += code_task.count_scopes
                     text = f'Спасибо!\nВы получили {code_task.count_scopes} вкусняшек!\nЕсли есть еще что-то, вводите, не стесняйтесь!'
