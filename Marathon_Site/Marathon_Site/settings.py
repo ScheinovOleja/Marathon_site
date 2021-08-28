@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-r@ln*m!lu^ci8eu(29r#iv06uyd^oy6rq3h0szeq@v^xikdwtv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["104.248.195.131", "localhost"]
 
 # Application definition
 
@@ -83,9 +83,9 @@ WSGI_APPLICATION = 'Marathon_Site.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': "Marathon",
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'NAME': "marathon",
+        'USER': 'oleg',
+        'PASSWORD': 'oleg2000',
         'HOST': 'localhost',
         'PORT': '5432',
     }

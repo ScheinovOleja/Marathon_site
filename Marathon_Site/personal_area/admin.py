@@ -204,7 +204,7 @@ class MarathonAdmin(admin.ModelAdmin):
 
 class TaskInline(admin.StackedInline):
     model = Tasks
-    fields = ['name', 'category', 'description', 'count_scopes', ('image', 'preview'), ('date_start', 'date_stop')]
+    fields = ['name', 'category', 'description', 'count_scopes', 'unique_code', ('image', 'preview'), ('date_start', 'date_stop')]
     readonly_fields = ['preview']
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size': '20'})},

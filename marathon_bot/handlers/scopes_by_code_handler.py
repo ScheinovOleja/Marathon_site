@@ -5,7 +5,7 @@ from pony.orm import db_session
 
 from marathon_bot import bot
 from marathon_bot.handlers.main_menu_handler import main_menu
-from marathon_bot.models import Codes, Users
+from marathon_bot.models import Codes, Users, Tasks
 from marathon_bot.states.all_states_menu import GetScopes
 
 
@@ -31,7 +31,18 @@ async def get_code(message: types.Message, state: FSMContext):
                 text = f'Спасибо!\nВы получили {code.scopes} вкусняшек!\nЕсли есть еще что-то, вводите, не стесняйтесь)'
                 user.entered_codes.add(code)
         else:
-            text = "Такого кода не найдено!\nПроверьте правильность написания и повторите попытку!"
+            code_task = Tasks.get(unique_code=message.text.lower())
+            breakpoint()
+            if code_task is not None:
+                user = await Users.get_user(tg_id=message.from_user.id, marathon_id=state_data['marathon_id'])
+                if any([code.id == comleted.id for comleted in user.comleted_tasks]):
+                    text = 'Вы уже выполнили это задание! Вкусняшек вы не получите!'
+                else:
+                    user.scopes += code_task.count_scopes
+                    text = f'Спасибо!\nВы получили {code_task.count_scopes} вкусняшек!\nЕсли есть еще что-то, вводите, не стесняйтесь!'
+                    user.completed_tasks.add(code_task)
+            else:
+                text = "Такого кода не найдено!\nПроверьте правильность написания и повторите попытку!"
     try:
         msg = await bot.edit_message_text(text, state_data['msg']['chat']['id'], state_data['msg']["message_id"],
                                           reply_markup=markup)

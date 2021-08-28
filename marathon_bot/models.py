@@ -68,6 +68,7 @@ class Tasks(db.Entity):
     date_start = Required(datetime.datetime, nullable=False)
     date_stop = Required(datetime.datetime, nullable=False)
     user = Set("Users", column='users_id', reverse='completed_tasks')
+    unique_code = Required(str, nullable=False)
 
 
 class Product(db.Entity):

@@ -49,6 +49,7 @@ class Tasks(models.Model):
     image = models.ImageField(blank=True, upload_to='photo_tasks/', null=True, verbose_name='Фотография задания')
     date_start = models.DateTimeField(null=False, verbose_name='Дата открытия задания')
     date_stop = models.DateTimeField(null=False, verbose_name='Дата закрытия задания')
+    unique_code = models.CharField(max_length=20, verbose_name='Код задания')
 
     class Meta:
         db_table = 'tasks'

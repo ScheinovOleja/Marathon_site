@@ -1,0 +1,1 @@
+systemctl start marathon_bot
