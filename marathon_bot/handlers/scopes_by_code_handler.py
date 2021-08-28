@@ -35,7 +35,7 @@ async def get_code(message: types.Message, state: FSMContext):
             breakpoint()
             if code_task is not None:
                 user = await Users.get_user(tg_id=message.from_user.id, marathon_id=state_data['marathon_id'])
-                if any([code.id == comleted.id for comleted in user.comleted_tasks]):
+                if any([code.id == completed.id for completed in user.completed_tasks]):
                     text = 'Вы уже выполнили это задание! Вкусняшек вы не получите!'
                 else:
                     user.scopes += code_task.count_scopes
