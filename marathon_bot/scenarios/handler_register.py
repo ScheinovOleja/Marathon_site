@@ -209,10 +209,9 @@ async def get_full_name(message: types.Message, state: FSMContext):
     await message.delete()
 
 
-@db_session
 async def delete_all_message(message: types.Message, state: FSMContext):
-    check = InviteCode.get(code=message.text)
-    breakpoint()
+    with db_session:
+        check = InviteCode.get(code=message.text)
     if check:
         if check.date_delete > datetime.datetime.now(check.date_delete.tzinfo):
             if any([user.marathon == check.marathon for user in Users.select().where(tg_id=message.from_user.id)]):
