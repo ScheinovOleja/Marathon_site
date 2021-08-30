@@ -210,7 +210,7 @@ async def get_full_name(message: types.Message, state: FSMContext):
 
 
 @db_session
-async def get_invite_code_from_marathon(message):
+def get_invite_code_from_marathon(message):
     check = InviteCode.get(code=message.text)
     if check:
         if check.date_delete > datetime.datetime.now(check.date_delete.tzinfo):
