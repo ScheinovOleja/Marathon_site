@@ -217,7 +217,7 @@ def get_invite_code_from_marathon(message):
             if any([user.marathon == check.marathon for user in Users.select().where(tg_id=message.from_user.id)]):
                 return False
             else:
-                return True
+                return check
         else:
             return False
     else:
@@ -226,7 +226,6 @@ def get_invite_code_from_marathon(message):
 
 async def delete_all_message(message: types.Message, state: FSMContext):
     check = get_invite_code_from_marathon(message)
-    breakpoint()
     if check:
         await Register.check_register.set()
         await state.update_data({'marathon_id': check.marathon.id})
