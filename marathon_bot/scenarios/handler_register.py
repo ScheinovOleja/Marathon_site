@@ -209,19 +209,26 @@ async def get_full_name(message: types.Message, state: FSMContext):
     await message.delete()
 
 
-async def delete_all_message(message: types.Message, state: FSMContext):
-    with db_session:
-        check = InviteCode.get(code=message.text)
+@db_session
+async def get_invite_code_from_marathon(message):
+    check = InviteCode.get(code=message.text)
     if check:
         if check.date_delete > datetime.datetime.now(check.date_delete.tzinfo):
             if any([user.marathon == check.marathon for user in Users.select().where(tg_id=message.from_user.id)]):
-                pass
+                return False
             else:
-                breakpoint()
-                await Register.check_register.set()
-                await state.update_data({'marathon_id': check.marathon.id})
-                await process_successful_payment(message, state)
+                return True
         else:
-            pass
+            return False
+    else:
+        return False
+
+
+async def delete_all_message(message: types.Message, state: FSMContext):
+    check = await get_invite_code_from_marathon(message)
+    if check:
+        await Register.check_register.set()
+        await state.update_data({'marathon_id': check.marathon.id})
+        await process_successful_payment(message, state)
     else:
         await message.delete()
