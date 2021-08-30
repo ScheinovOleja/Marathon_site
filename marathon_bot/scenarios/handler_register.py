@@ -226,6 +226,7 @@ async def get_invite_code_from_marathon(message):
 
 async def delete_all_message(message: types.Message, state: FSMContext):
     check = await get_invite_code_from_marathon(message)
+    breakpoint()
     if check:
         await Register.check_register.set()
         await state.update_data({'marathon_id': check.marathon.id})
