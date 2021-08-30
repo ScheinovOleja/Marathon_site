@@ -1,7 +1,7 @@
 {
     "715845455": {
         "715845455": {
-            "state": "GetScopes:waiting_code",
+            "state": "Register:choice_marathon",
             "data": {
                 "marathon_id": 7,
                 "msg": {

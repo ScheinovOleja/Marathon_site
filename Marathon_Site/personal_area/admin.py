@@ -429,6 +429,10 @@ class BotConfigAdmin(admin.ModelAdmin):
     start_bot.short_description = 'Управление'
 
 
+class AllUsersAdmin(admin.ModelAdmin):
+    list_display = ['tg_id']
+
+
 class MyAdminSite(AdminSite):
 
     def get_app_list(self, request):
@@ -452,3 +456,4 @@ admin.site.register(Codes, CodesAdmin)
 admin.site.register(InviteCode, InviteCodeAdmin)
 admin.site.register(ButtonsText, ButtonsTextAdmin)
 admin.site.register(BotConfig, BotConfigAdmin)
+admin.site.register(AllUsers, AllUsersAdmin)

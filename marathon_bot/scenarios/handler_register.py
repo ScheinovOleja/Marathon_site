@@ -140,7 +140,6 @@ async def register_marathon(query: types.CallbackQuery, state: FSMContext):
             reply_markup=markup
         )
     else:
-        breakpoint()
         Users(
             tg_id=query.from_user.id,
             username=query.from_user.username,
@@ -164,18 +163,19 @@ async def process_pre_checkout_query(pre_checkout_query: types.PreCheckoutQuery)
     await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
 
 
+@db_session
 async def process_successful_payment(message: types.Message, state: FSMContext):
     state_data = await state.get_data()
-    with db_session:
-        Users(
-            tg_id=message.chat.id,
-            username=message.chat.username,
-            first_name='.',
-            last_name='.',
-            scopes=0,
-            marathon=state_data['marathon_id'],
-            is_pay=True,
-        )
+    Users(
+        tg_id=message.chat.id,
+        username=message.chat.username,
+        first_name='.',
+        last_name='.',
+        scopes=0,
+        marathon=state_data['marathon_id'],
+        is_pay=True,
+    )
+    commit()
     msg = await message.answer(
         "Доброго времени суток!\nПрошу заполнять данные верно, так как в дальнейшем они будут использоваться "
         "для подсчета данных!\n Как вас зовут?(Напишите ваши Фамилию и Имя через пробел)\n"
@@ -212,16 +212,17 @@ async def get_full_name(message: types.Message, state: FSMContext):
 @db_session
 async def delete_all_message(message: types.Message, state: FSMContext):
     check = InviteCode.get(code=message.text)
+    breakpoint()
     if check:
         if check.date_delete > datetime.datetime.now(check.date_delete.tzinfo):
             if any([user.marathon == check.marathon for user in Users.select().where(tg_id=message.from_user.id)]):
                 pass
             else:
+                breakpoint()
                 await Register.check_register.set()
-                await process_successful_payment(message, state)
                 await state.update_data({'marathon_id': check.marathon.id})
+                await process_successful_payment(message, state)
         else:
             pass
     else:
-        pass
-    await message.delete()
+        await message.delete()

@@ -43,8 +43,8 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(process_successful_payment, content_types=ContentType.SUCCESSFUL_PAYMENT, state="*")
     dp.register_message_handler(delete_all_message,
                                 state=[MainMenu, TaskMenu, UserInfoMenu, CalculationOfKBZUMenu, ReadyMadeMenuState,
-                                       TrainingMenu, StatsMenu, ProductsMenu, Register.check_register,
-                                       Register.choice_marathon, Register.register_in_marathon])
+                                       TrainingMenu, StatsMenu, ProductsMenu, 
+                                       Register.choice_marathon, Register.check_register])
 
 
 def measurements_handler(dp: Dispatcher):
