@@ -21,7 +21,7 @@ async def get_code(message: types.Message, state: FSMContext):
     markup = types.InlineKeyboardMarkup().add(main_menu)
     state_data = await state.get_data()
     with db_session:
-        code = Codes.get(code=message.text.lower(), marathon=state_data['marathon_id'])
+        code = Codes.select().where(code=message.text.lower(), marathon=state_data['marathon_id'])[:][0]
         if code is not None:
             user = await Users.get_user(tg_id=message.from_user.id, marathon_id=state_data['marathon_id'])
             if any([code.id == entered.id for entered in user.entered_codes]):
@@ -38,7 +38,8 @@ async def get_code(message: types.Message, state: FSMContext):
                     text = 'Вы уже выполнили это задание! Вкусняшек вы не получите!'
                 else:
                     user.scopes += code_task.count_scopes
-                    text = f'Спасибо!\nВы получили {code_task.count_scopes} вкусняшек!\nЕсли есть еще что-то, вводите, не стесняйтесь!'
+                    text = f'Спасибо!\nВы получили {code_task.count_scopes} вкусняшек!\nЕсли есть еще что-то, ' \
+                           f'вводите, не стесняйтесь!'
                     user.completed_tasks.add(code_task)
             else:
                 text = "Такого кода не найдено!\nПроверьте правильность написания и повторите попытку!"

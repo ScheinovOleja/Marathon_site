@@ -15,7 +15,7 @@ from marathon_bot.states.state_scenarios import Register
 async def send_welcome(message: types.Message, action='send'):
     with db_session:
         try:
-            if not AllUsers.get(tg_id=message.from_user.id):
+            if not AllUsers.get(tg_id=message.from_user.id) and not message.from_user.is_bot:
                 AllUsers(tg_id=message.from_user.id)
                 commit()
         except MultipleObjectsFoundError:
@@ -61,7 +61,7 @@ async def check_register_from_marathon(query: types.CallbackQuery, state: FSMCon
     cur = con.cursor(cursor_factory=NamedTupleCursor)
     cur.execute(
         f"""
-            SELECT pam.id, pau.first_name, pau.last_name
+            SELECT pam.id, pau.first_name, pau.last_name, pau.tg_id
             FROM marathon as pam
             INNER JOIN users as pau ON pam.id = pau.marathon_id
             WHERE pau.tg_id = {query.from_user.id} AND pam.name = \'{query.data.split("_marathon")[0]}\'
@@ -70,11 +70,12 @@ async def check_register_from_marathon(query: types.CallbackQuery, state: FSMCon
     marathon = cur.fetchone()
     count_users = Marathon.get(name=query.data.split("_marathon")[0])
     if count_users.count_users <= 0:
-        return await query.message.edit_text(
-            "⚡️⚡️⚡️ К сожалению, набор на марафон уже закончен, так как все места на него уже заняты.\n"
-            "Ожидайте запуска следующего марафона 🤗\n"
-            "🍓 Ждите новостей в моём инстаграме: instagram.com/vkus_viki\n\n"
-            "Для возврата в меню выбора марафона нажмите /start !")
+        if not marathon:
+            return await query.message.edit_text(
+                "⚡️⚡️⚡️ К сожалению, набор на марафон уже закончен, так как все места на него уже заняты.\n"
+                "Ожидайте запуска следующего марафона 🤗\n"
+                "🍓 Ждите новостей в моём инстаграме: instagram.com/vkus_viki\n\n"
+                "Для возврата в меню выбора марафона нажмите /start !")
     if not marathon or (marathon.first_name == '.' and marathon.last_name == '.'):
         markup = types.InlineKeyboardMarkup()
         markup.add(
@@ -110,12 +111,14 @@ async def register_marathon(query: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     marathon = await Marathon.get_marathon(marathon_id=data['marathon_id'])
     if marathon.count_users <= 0:
-        return await none_register_marathon(query)
+        if await Users.get_user(query.from_user.id, data['marathon_id']):
+            return await none_register_marathon(query)
     try:
         user = await Users.get_user(query.from_user.id, data['marathon_id'])
         check = True if user.is_pay else False
     except Exception:
         check = False
+        user = None
     if marathon.price > 0.0 and not check:
         prices = [types.LabeledPrice(label=marathon.name, amount=marathon.price * 100)]
         await query.message.delete()
@@ -140,16 +143,17 @@ async def register_marathon(query: types.CallbackQuery, state: FSMContext):
             reply_markup=markup
         )
     else:
-        Users(
-            tg_id=query.from_user.id,
-            username=query.from_user.username,
-            first_name='.',
-            last_name='.',
-            scopes=0,
-            marathon=marathon.id,
-            is_pay=False,
-        )
-        commit()
+        if not user:
+            Users(
+                tg_id=query.from_user.id,
+                username=query.from_user.username,
+                first_name='.',
+                last_name='.',
+                scopes=0,
+                marathon=marathon.id,
+                is_pay=False,
+            )
+            commit()
         msg = await query.message.edit_text(
             "Доброго времени суток!\nПрошу заполнять данные верно, так как в дальнейшем они будут использоваться "
             "для подсчета данных!\n Как вас зовут?(Напишите ваши Фамилию и Имя через пробел)\n"
@@ -212,7 +216,7 @@ async def get_full_name(message: types.Message, state: FSMContext):
 @db_session
 def get_invite_code_from_marathon(message):
     check = InviteCode.get(code=message.text)
-    if check:
+    if check and check.marathon.count_users > 0:
         if check.date_delete > datetime.datetime.now(check.date_delete.tzinfo):
             if any([user.marathon == check.marathon for user in Users.select().where(tg_id=message.from_user.id)]):
                 return False

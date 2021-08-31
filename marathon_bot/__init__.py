@@ -18,9 +18,9 @@ con = psycopg2.connect(**config['database'])
 cur = con.cursor(cursor_factory=NamedTupleCursor)
 cur.execute(
     f"""
-            SELECT *
-            FROM bot_cfg as bc
-        """
+        SELECT *
+        FROM bot_cfg as bc
+    """
 )
 bot_cfg = cur.fetchone()
 

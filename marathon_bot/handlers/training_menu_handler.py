@@ -38,7 +38,12 @@ async def send_training_menus(query: types.CallbackQuery, state: FSMContext):
         markup.add(types.InlineKeyboardButton(text=f'{task.name}', callback_data=f'Menu_{task.id}'))
     markup.add(back, main_menu)
     await TrainingMenu.next()
-    await query.message.edit_text('Выберите нужное меню:', reply_markup=markup)
+    if query.message.content_type == 'photo':
+        await query.message.delete()
+        await query.message.answer("Выберите нужное меню:", reply_markup=markup)
+        return
+    else:
+        await query.message.edit_text("Выберите нужное меню:", reply_markup=markup)
 
 
 @db_session

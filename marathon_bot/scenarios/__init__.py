@@ -29,7 +29,8 @@ def calculate_kcal_handler(dp: Dispatcher):
 
 
 def register_handlers(dp: Dispatcher):
-    dp.register_message_handler(send_welcome, state="*", commands=['start'])
+    dp.register_message_handler(send_welcome, state="*",
+                                commands=['start'])
     dp.register_callback_query_handler(check_register_from_marathon, lambda query: '_marathon' in query.data,
                                        state=Register.choice_marathon)
     dp.register_callback_query_handler(register_marathon, lambda query: 'Register_from_Marathon' in query.data,
@@ -43,7 +44,7 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(process_successful_payment, content_types=ContentType.SUCCESSFUL_PAYMENT, state="*")
     dp.register_message_handler(delete_all_message,
                                 state=[MainMenu, TaskMenu, UserInfoMenu, CalculationOfKBZUMenu, ReadyMadeMenuState,
-                                       TrainingMenu, StatsMenu, ProductsMenu, 
+                                       TrainingMenu, StatsMenu, ProductsMenu,
                                        Register.choice_marathon, Register.check_register])
 
 

@@ -1,10 +1,12 @@
+import json
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.callback_data import CallbackData
 from aiogram.utils.exceptions import BadRequest
 from pony.orm import db_session
 
-from marathon_bot import MEDIA_ROOT
+from marathon_bot import MEDIA_ROOT, BASE_DIR
 from marathon_bot.general_func import btn
 from marathon_bot.handlers.main_menu_handler import back, main_menu
 from marathon_bot.models import Users, PhotoStates
@@ -184,7 +186,8 @@ async def send_menu_user_info_photos_add_get(query: types.CallbackQuery, state: 
 async def get_photo_from_db(query: types.CallbackQuery, state: FSMContext):
     state_data = await state.get_data()
     markup = types.InlineKeyboardMarkup(row_width=2)
-    text = "Вы здесь очень красивый(ая)!"
+    text = "Вы здесь очень красивы! Если вдруг захотите отправить другую фотографию, то нажмите «Назад» и перейдите в " \
+           "пункт «Поменять фотографию»"
     with db_session:
         user = await Users.get_user(tg_id=query.from_user.id, marathon_id=state_data['marathon_id'])
         photo_from_db = getattr(user.photos, states.get(query.data.split("post:get:")[1].split("_get")[0]))
@@ -214,14 +217,14 @@ async def send_menu_wait_photo_from_user(query: types.CallbackQuery, state: FSMC
         place = 'сзади'
     else:
         place = ''
-    text = f"""Отправьте фотографию {place} "{time}". Лицо можете прикрыть листом с надписью или смайликом. Пример фотографии
-     вы можете увидеть ниже.
-     \n❗️ Наденьте белье или купальник, чтобы было видно вашу фигуру.
-     \n❗️ Делайте фотографию с хорошим освещением и обязательно в полный рост!
-     \n❗️ Обратите внимание на позицию тела: ноги на ширине плеч, тело расслаблено. Живот не втягивать и не выталкивать, 
-     таз не отставлять назад.
-     \n❗️ В руках держите листок бумаги на котором будет надпись от руки: ВКУС ТЕЛА с Викой ДД.ММ.ГГ
-     \nЕсли все условия выполнены, то отправляйте фотографию сюда и не забудьте перепроверить"""
+    with open(f'{BASE_DIR}/marathon_bot/settings/texts.json', 'r') as file:
+        all_text = json.load(file)
+    for text_from_json in all_text.values():
+        if f'{place} \"{time}\"' in text_from_json:
+            text = text_from_json
+            break
+        else:
+            text = "Что-то произошло с текстом. Напишите админу."
     markup.add(back, main_menu)
     with db_session:
         try:

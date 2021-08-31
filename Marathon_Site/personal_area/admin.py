@@ -165,10 +165,10 @@ class PhotoAdmin(admin.ModelAdmin):
 
 
 class MeasurementAdmin(admin.ModelAdmin):
-    fields = ['user_change', 'waist_before', 'breast_before', 'femur_before', 'weight_before',
-              'waist_after', 'breast_after', 'femur_after', 'weight_after']
-    readonly_fields = ['user_change', 'waist_before', 'breast_before', 'femur_before', 'weight_before',
-                       'waist_after', 'breast_after', 'femur_after', 'weight_after']
+    fields = ['user_change', 'breast_before', 'waist_before', 'femur_before', 'weight_before',
+              'breast_after', 'waist_after', 'femur_after', 'weight_after']
+    readonly_fields = ['user_change', 'breast_before', 'waist_before', 'femur_before', 'weight_before',
+                       'breast_after', 'waist_after', 'femur_after', 'weight_after']
     list_display = ['user_display']
     list_filter = ['users__marathon__name']
 

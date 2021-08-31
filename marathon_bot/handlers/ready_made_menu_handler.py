@@ -16,9 +16,10 @@ async def send_category_ready_made_menu(query: types.CallbackQuery, state: FSMCo
     markup = types.InlineKeyboardMarkup()
     text = 'Выберите количество калорий:'
     if not marathon.kcal_category_ready_made:
-        text = 'К сожалению, на данный момент еще нет ни одной категории!'
+        text = 'К сожалению, на данный момент готовое меню в разработке и скоро тут появится! Ждите новостей в моём ' \
+               'инстаграме: instagram.com/vkus_viki'
     else:
-        for category in marathon.kcal_category_ready_made:
+        for category in marathon.kcal_category_ready_made.order_by(KcalCategoryReadyMadeMenu.id):
             markup.add(types.InlineKeyboardButton(text=f'{category.kcal_category}',
                                                   callback_data=f'Kcal_{category.id}'))
     markup.add(back, main_menu)
@@ -76,7 +77,12 @@ async def send_ready_made_menu_list(query: types.CallbackQuery, state: FSMContex
         markup.add(types.InlineKeyboardButton(text=f'{menu.name_menu}', callback_data=f'Menu_{menu.id}'))
     markup.add(back, main_menu)
     await ReadyMadeMenuState.next()
-    await query.message.edit_text("Выберите рецепт:", reply_markup=markup)
+    if query.message.content_type == 'photo':
+        await query.message.delete()
+        await query.message.answer("Выберите рецепт:", reply_markup=markup)
+        return
+    else:
+        await query.message.edit_text("Выберите рецепт:", reply_markup=markup)
 
 
 @db_session

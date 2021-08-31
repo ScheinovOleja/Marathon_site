@@ -21,9 +21,9 @@ def btn(call: str):
     cur = con.cursor()
     cur.execute(
         f"""
-                SELECT bt.{call}
-                FROM btn_text as bt
-            """
+            SELECT bt.{call}
+            FROM btn_text as bt
+        """
     )
     text = cur.fetchone()
     return text[0]

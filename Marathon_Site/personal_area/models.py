@@ -83,12 +83,12 @@ class Marathon(models.Model):
 
 
 class Measurement(models.Model):
-    waist_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ПОСЛЕ')
+    waist_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров талии ПОСЛЕ')
     breast_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ПОСЛЕ')
-    femur_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ПОСЛЕ')
-    weight_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ПОСЛЕ')
-    waist_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ДО')
-    breast_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров талии ДО')
+    femur_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров бедер ПОСЛЕ')
+    weight_after = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров веса ПОСЛЕ')
+    waist_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров талии ДО')
+    breast_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров груди ДО')
     femur_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров бедер ДО')
     weight_before = models.FloatField(blank=True, null=True, verbose_name='Отправка замеров веса ДО')
 
