@@ -13,6 +13,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, path
 from django.utils.safestring import mark_safe
 
+from .general_func import users_delete, marathon_delete
 from .models import *
 
 
