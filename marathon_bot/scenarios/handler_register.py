@@ -111,7 +111,10 @@ async def register_marathon(query: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     marathon = await Marathon.get_marathon(marathon_id=data['marathon_id'])
     if marathon.count_users <= 0:
-        if await Users.get_user(query.from_user.id, data['marathon_id']):
+        try:
+            if await Users.get_user(query.from_user.id, data['marathon_id']):
+                return await none_register_marathon(query)
+        except Exception as exc:
             return await none_register_marathon(query)
     try:
         user = await Users.get_user(query.from_user.id, data['marathon_id'])
