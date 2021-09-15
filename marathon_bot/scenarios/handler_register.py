@@ -150,7 +150,7 @@ async def register_marathon(query: types.CallbackQuery, state: FSMContext):
             try:
                 Users(
                     tg_id=query.from_user.id,
-                    username=query.from_user.username if query.from_user.username else '',
+                    username=query.from_user.username if query.from_user.username else '.',
                     first_name='.',
                     last_name='.',
                     scopes=0,
@@ -161,7 +161,7 @@ async def register_marathon(query: types.CallbackQuery, state: FSMContext):
             except Exception as exc:
                 Users(
                     tg_id=query.from_user.id,
-                    username='',
+                    username='.',
                     first_name='.',
                     last_name='.',
                     scopes=0,
