@@ -147,16 +147,28 @@ async def register_marathon(query: types.CallbackQuery, state: FSMContext):
         )
     else:
         if not user:
-            Users(
-                tg_id=query.from_user.id,
-                username=query.from_user.username,
-                first_name='.',
-                last_name='.',
-                scopes=0,
-                marathon=marathon.id,
-                is_pay=False,
-            )
-            commit()
+            try:
+                Users(
+                    tg_id=query.from_user.id,
+                    username=query.from_user.username if query.from_user.username else '',
+                    first_name='.',
+                    last_name='.',
+                    scopes=0,
+                    marathon=marathon.id,
+                    is_pay=False,
+                )
+                commit()
+            except Exception as exc:
+                Users(
+                    tg_id=query.from_user.id,
+                    username='',
+                    first_name='.',
+                    last_name='.',
+                    scopes=0,
+                    marathon=marathon.id,
+                    is_pay=False,
+                )
+                commit()
         msg = await query.message.edit_text(
             "Доброго времени суток!\nПрошу заполнять данные верно, так как в дальнейшем они будут использоваться "
             "для подсчета данных!\n Как вас зовут?(Напишите ваши Фамилию и Имя через пробел)\n"
