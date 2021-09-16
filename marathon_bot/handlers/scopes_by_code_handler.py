@@ -21,15 +21,16 @@ async def get_code(message: types.Message, state: FSMContext):
     markup = types.InlineKeyboardMarkup().add(main_menu)
     state_data = await state.get_data()
     with db_session:
-        code = Codes.select().where(code=message.text.lower(), marathon=state_data['marathon_id'])[:][0]
-        if code is not None:
+        code = Codes.select().where(code=message.text.lower(), marathon=state_data['marathon_id'])[:]
+        if code:
             user = await Users.get_user(tg_id=message.from_user.id, marathon_id=state_data['marathon_id'])
-            if any([code.id == entered.id for entered in user.entered_codes]):
+            if any([code[0].id == entered.id for entered in user.entered_codes]):
                 text = "Вы уже вводили этот код! Вкусняшек вы не получите!"
             else:
-                user.scopes += code.scopes
-                text = f'Спасибо!\nВы получили {code.scopes} вкусняшек!\nЕсли есть еще что-то, вводите, не стесняйтесь)'
-                user.entered_codes.add(code)
+                user.scopes += code[0].scopes
+                text = f'Спасибо!\nВы получили {code[0].scopes} вкусняшек!\nЕсли есть еще что-то, вводите, не ' \
+                       f'стесняйтесь)'
+                user.entered_codes.add(code[0])
         else:
             code_task = Tasks.get(unique_code=message.text.lower())
             if code_task is not None:

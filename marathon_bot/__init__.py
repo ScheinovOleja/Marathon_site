@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import psycopg2
 from aiogram import Bot, Dispatcher, types
-from aiogram.contrib.fsm_storage.files import JSONStorage
+from aiogram.contrib.fsm_storage.redis import RedisStorage
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from psycopg2.extras import NamedTupleCursor
 
@@ -26,13 +26,16 @@ bot_cfg = cur.fetchone()
 
 loop = asyncio.get_event_loop()
 bot = Bot(token=bot_cfg.bot_token, parse_mode=types.ParseMode.HTML)
-dp = Dispatcher(bot, storage=JSONStorage('settings/user_states.json'), loop=loop)
+storage = RedisStorage('localhost', 6379, db=5)
+dp = Dispatcher(bot, storage=storage, loop=loop)
 dp.middleware.setup(LoggingMiddleware())
 
 if not os.path.isdir(f'{os.getcwd()}/logs'):
     os.mkdir(f'{os.getcwd()}/logs')
-logging.basicConfig(level=logging.ERROR, filename='logs/log_error.log')
-logging.getLogger(__name__)
+logging.basicConfig(format="[%(asctime)s] %(levelname)s : %(name)s : %(message)s",
+                    level=logging.ERROR, datefmt="%d-%m-%y %H:%M:%S", filename='logs/log_error.log')
+logging.getLogger('aiogram').setLevel(logging.ERROR)
+logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_ROOT = os.path.join(BASE_DIR, "Marathon_Site/media/")

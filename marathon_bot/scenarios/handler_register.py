@@ -2,6 +2,7 @@ import datetime
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.exceptions import MessageToDeleteNotFound
 from pony.orm import db_session, commit, MultipleObjectsFoundError
 from psycopg2.extras import NamedTupleCursor
 
@@ -150,7 +151,7 @@ async def register_marathon(query: types.CallbackQuery, state: FSMContext):
             try:
                 Users(
                     tg_id=query.from_user.id,
-                    username=query.from_user.username if query.from_user.username else '.',
+                    username=query.from_user.username if query.from_user.username else '------',
                     first_name='.',
                     last_name='.',
                     scopes=0,
@@ -161,7 +162,7 @@ async def register_marathon(query: types.CallbackQuery, state: FSMContext):
             except Exception as exc:
                 Users(
                     tg_id=query.from_user.id,
-                    username='.',
+                    username='------',
                     first_name='.',
                     last_name='.',
                     scopes=0,
@@ -187,7 +188,7 @@ async def process_successful_payment(message: types.Message, state: FSMContext):
     state_data = await state.get_data()
     Users(
         tg_id=message.chat.id,
-        username=message.chat.username,
+        username=message.chat.username if message.from_user.username else '------',
         first_name='.',
         last_name='.',
         scopes=0,
@@ -225,7 +226,10 @@ async def get_full_name(message: types.Message, state: FSMContext):
         return
     await state.update_data({"marathon_id": state_data['marathon_id'], 'msg': state_data['msg']})
     await send_main_menu(types.CallbackQuery(message=message), state)
-    await message.delete()
+    try:
+        await message.delete()
+    except MessageToDeleteNotFound:
+        return
 
 
 @db_session

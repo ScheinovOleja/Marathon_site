@@ -37,7 +37,7 @@ async def send_main_menu(query: CallbackQuery, state: FSMContext):
                                             state_data['msg']['chat']['id'],
                                             state_data['msg']["message_id"], reply_markup=markup)
                 await query.message.delete()
-            except KeyError:
+            except Exception:
                 await query.message.edit_text('Простите, марафон еще закрыт! Нажмите /start', reply_markup=markup)
             await Register.choice_marathon.set()
             return
