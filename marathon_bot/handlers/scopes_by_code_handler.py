@@ -30,7 +30,7 @@ async def get_code(message: types.Message, state: FSMContext):
                 user.scopes += code[0].scopes
                 text = f'Спасибо!\nВы получили {code[0].scopes} вкусняшек!\nЕсли есть еще что-то, вводите, не ' \
                        f'стесняйтесь)'
-                user.entered_codes.add(code[0])
+                code[0].user.add(user)
         else:
             code_task = Tasks.get(unique_code=message.text.lower())
             if code_task is not None:

@@ -149,7 +149,7 @@ class Users(db.Entity):
     measurement = Optional(Measurement, nullable=True, reverse='user', column='measurement_id', cascade_delete=True)
     photos = Optional(Photo, nullable=True, reverse='user', column='photos_id', cascade_delete=True)
     bzu = Optional(BZUUsers, nullable=True, reverse='user', column='bzu_id', cascade_delete=True)
-    entered_codes = Set(Codes, nullable=True, reverse='user', column='codes_id')
+    entered_codes = Set(Codes, nullable=True, unique=False, reverse='user', column='codes_id')
     is_pay = Optional(bool)
 
     @staticmethod

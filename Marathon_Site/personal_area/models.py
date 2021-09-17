@@ -136,7 +136,6 @@ class ProductUsers(models.Model):
 
     class Meta:
         db_table = 'product_users'
-        unique_together = (('product', 'users'),)
 
 
 class TasksUsers(models.Model):
@@ -145,7 +144,6 @@ class TasksUsers(models.Model):
 
     class Meta:
         db_table = 'tasks_users'
-        unique_together = (('tasks', 'users'),)
 
 
 class BZUUsers(models.Model):
@@ -180,8 +178,6 @@ class CodesUsers(models.Model):
 
     class Meta:
         db_table = 'codes_users'
-        unique_together = (('codes', 'users'),)
-
 
 class Users(models.Model):
     objects = MyManager()

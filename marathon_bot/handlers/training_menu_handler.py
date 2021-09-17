@@ -4,7 +4,7 @@ from pony.orm import db_session
 
 from marathon_bot.general_func import send_photo
 from marathon_bot.handlers.main_menu_handler import main_menu, back
-from marathon_bot.models import TrainingInfo, Marathon
+from marathon_bot.models import TrainingInfo, Marathon, CategoryTrainingMenu
 from marathon_bot.states.all_states_menu import TrainingMenu
 
 
@@ -17,7 +17,7 @@ async def send_category_training(query: types.CallbackQuery, state: FSMContext):
     if not marathon.category_training_menu:
         text = 'К сожалению, на данный момент еще нет ни одной категории!'
     else:
-        for category in marathon.category_training_menu:
+        for category in marathon.category_training_menu.order_by(CategoryTrainingMenu.id):
             markup.add(types.InlineKeyboardButton(text=f'{category.category}', callback_data=f'Training_{category.id}'))
     markup.add(back, main_menu)
     await TrainingMenu.first()
@@ -29,10 +29,10 @@ async def send_training_menus(query: types.CallbackQuery, state: FSMContext):
     markup = types.InlineKeyboardMarkup()
     data = await state.get_data()
     try:
-        all_menu = TrainingInfo.select().where(category=data['callback'].split('_')[1])[:]
+        all_menu = TrainingInfo.select().where(category=data['callback'].split('_')[1]).order_by(TrainingInfo.id)[:]
         await state.update_data({"callback": data['callback']})
     except KeyError:
-        all_menu = TrainingInfo.select().where(category=query.data.split('_')[1])[:]
+        all_menu = TrainingInfo.select().where(category=query.data.split('_')[1]).order_by(TrainingInfo.id)[:]
         await state.update_data({"callback": query.data})
     for task in all_menu:
         markup.add(types.InlineKeyboardButton(text=f'{task.name}', callback_data=f'Menu_{task.id}'))
