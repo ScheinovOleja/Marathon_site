@@ -131,19 +131,23 @@ class Product(models.Model):
 
 
 class ProductUsers(models.Model):
-    product = models.ForeignKey(Product, models.DO_NOTHING)
+    product = models.OneToOneField(Product, models.DO_NOTHING, primary_key=True)
     users = models.ForeignKey('Users', models.DO_NOTHING)
 
     class Meta:
+        managed = False
         db_table = 'product_users'
+        unique_together = (('product', 'users'),)
 
 
 class TasksUsers(models.Model):
-    tasks = models.ForeignKey(Tasks, models.DO_NOTHING)
+    tasks = models.OneToOneField(Tasks, models.DO_NOTHING, primary_key=True)
     users = models.ForeignKey('Users', models.DO_NOTHING)
 
     class Meta:
+        managed = False
         db_table = 'tasks_users'
+        unique_together = (('tasks', 'users'),)
 
 
 class BZUUsers(models.Model):
@@ -173,11 +177,14 @@ class Codes(models.Model):
 
 
 class CodesUsers(models.Model):
-    codes = models.OneToOneField(Codes, models.DO_NOTHING)
+    codes = models.OneToOneField(Codes, models.DO_NOTHING, primary_key=True)
     users = models.ForeignKey('Users', models.DO_NOTHING)
 
     class Meta:
+        managed = False
         db_table = 'codes_users'
+        unique_together = (('codes', 'users'),)
+
 
 class Users(models.Model):
     objects = MyManager()
