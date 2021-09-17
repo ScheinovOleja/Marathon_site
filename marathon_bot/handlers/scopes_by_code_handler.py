@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import MessageNotModified
-from pony.orm import db_session
+from pony.orm import db_session, commit
 
 from marathon_bot import bot
 from marathon_bot.handlers.main_menu_handler import main_menu
@@ -30,7 +30,7 @@ async def get_code(message: types.Message, state: FSMContext):
                 user.scopes += code[0].scopes
                 text = f'Спасибо!\nВы получили {code[0].scopes} вкусняшек!\nЕсли есть еще что-то, вводите, не ' \
                        f'стесняйтесь)'
-                code[0].user.add(user)
+                user.entered_codes.add(code[0])
         else:
             code_task = Tasks.get(unique_code=message.text.lower())
             if code_task is not None:
