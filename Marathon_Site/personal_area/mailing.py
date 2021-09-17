@@ -1,7 +1,9 @@
+import asyncio
 import os
 import re
 from datetime import datetime
 
+import requests
 from Marathon_Site.settings import MEDIA_ROOT
 from aiogram import Bot, types
 from aiogram.types import ChatActions
@@ -26,8 +28,9 @@ def get_cfg():
     return BotConfig.objects.first()
 
 
-async def mailing(request):
-    bot_cfg = await get_cfg()
+def mailing(request):
+    bot_cfg = asyncio.run(get_cfg())
+    # bot_cfg = await get_cfg()
     start_time = datetime.now()
     bot = Bot(token=bot_cfg.bot_token, parse_mode=types.ParseMode.HTML)
     os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
@@ -49,46 +52,61 @@ async def mailing(request):
     file_id = None
     i = 0
     if request.POST['marathon'] == '':
-        all_users = await get_all_users()
+        all_users = asyncio.run(get_all_users())
+        # all_users = await get_all_users()
     else:
-        all_users = await get_users_from_marathon(request.POST['marathon'])
+        all_users = asyncio.run(get_users_from_marathon(request.POST['marathon']))
+        # all_users = await get_users_from_marathon(request.POST['marathon'])
     for user in all_users:
         try:
             if check:
                 if request.POST['type_file'] == 'image':
-                    await bot.send_chat_action(user.tg_id, ChatActions.UPLOAD_PHOTO)
+                    # await bot.send_chat_action(user.tg_id, ChatActions.UPLOAD_PHOTO)
+                    asyncio.run(bot.send_chat_action(user.tg_id, ChatActions.UPLOAD_PHOTO))
                     if file_id:
-                        await bot.send_photo(user.tg_id, file_id, caption=text)
+                        asyncio.run(bot.send_photo(user.tg_id, file_id, caption=text))
+                        # await bot.send_photo(user.tg_id, file_id, caption=text)
                     else:
                         with open(f'{path}{file_from_form.name}', 'rb') as file:
-                            msg = await bot.send_photo(user.tg_id, file, caption=text)
+                            # msg = await bot.send_photo(user.tg_id, file, caption=text)
+                            msg = asyncio.run(bot.send_photo(user.tg_id, file, caption=text))
                             file_id = msg.photo[-1].file_id
                 elif request.POST['type_file'] == 'video-common':
-                    await bot.send_chat_action(user.tg_id, ChatActions.RECORD_VIDEO)
+                    asyncio.run(bot.send_chat_action(user.tg_id, ChatActions.RECORD_VIDEO))
+                    # await bot.send_chat_action(user.tg_id, ChatActions.RECORD_VIDEO)
                     if file_id:
-                        await bot.send_video(user.tg_id, file_id, caption=text)
+                        asyncio.run(bot.send_video(user.tg_id, file_id, caption=text))
+                        # await bot.send_video(user.tg_id, file_id, caption=text)
                     else:
                         with open(f'{path}{file_from_form.name}', 'rb') as file:
-                            msg = await bot.send_video(user.tg_id, file, caption=text)
+                            # msg = await bot.send_video(user.tg_id, file, caption=text)
+                            msg = asyncio.run(bot.send_video(user.tg_id, file, caption=text))
                             file_id = msg.video.file_id
                 elif request.POST['type_file'] == 'video-round':
-                    await bot.send_chat_action(user.tg_id, ChatActions.RECORD_VIDEO_NOTE)
+                    asyncio.run(bot.send_chat_action(user.tg_id, ChatActions.RECORD_VIDEO_NOTE))
+                    # await bot.send_chat_action(user.tg_id, ChatActions.RECORD_VIDEO_NOTE)
                     if file_id:
-                        await bot.send_video_note(user.tg_id, file_id, duration=5)
+                        asyncio.run(bot.send_video_note(user.tg_id, file_id, duration=5))
+                        # await bot.send_video_note(user.tg_id, file_id, duration=5)
                     else:
                         with open(f'{path}{file_from_form.name}', 'rb') as file:
-                            msg = await bot.send_video_note(user.tg_id, file, duration=5)
+                            msg = asyncio.run(bot.send_video_note(user.tg_id, file, duration=5))
+                            # msg = await bot.send_video_note(user.tg_id, file, duration=5)
                             file_id = msg.video_note.file_id
                 elif request.POST['type_file'] == 'file':
-                    await bot.send_chat_action(user.tg_id, ChatActions.UPLOAD_DOCUMENT)
+                    asyncio.run(bot.send_chat_action(user.tg_id, ChatActions.UPLOAD_DOCUMENT))
+                    # await bot.send_chat_action(user.tg_id, ChatActions.UPLOAD_DOCUMENT)
                     if file_id:
-                        await bot.send_document(user.tg_id, file_id, caption=text)
+                        asyncio.run(bot.send_document(user.tg_id, file_id, caption=text))
+                        # await bot.send_document(user.tg_id, file_id, caption=text)
                     else:
                         with open(f'{path}{file_from_form.name}', 'rb') as file:
-                            msg = await bot.send_document(user.tg_id, file, caption=text)
+                            msg = asyncio.run(bot.send_document(user.tg_id, file, caption=text))
+                            # msg = await bot.send_document(user.tg_id, file, caption=text)
                             file_id = msg.document.file_id
             else:
-                await bot.send_message(user.tg_id, text)
+                asyncio.run(bot.send_message(user.tg_id, text))
+                # await bot.send_message(user.tg_id, text)
             i += 1
         except (BotBlocked, CantTalkWithBots):
             user.delete()
@@ -96,5 +114,15 @@ async def mailing(request):
             print(exc)
     if path:
         os.system(f'rm {path}{file_from_form.name}')
-    await bot.send_message(bot_cfg.admin_id, f'Сообщения пришли {i} людям.\nВремя, ушедшее на рассылку - '
-                                             f'{datetime.now() - start_time}')
+    # await bot.send_message(bot_cfg.admin_id, f'Сообщения пришли {i} людям.\nВремя, ушедшее на рассылку - '
+    #                                          f'{datetime.now() - start_time}')
+    token = bot_cfg.bot_token
+    url = "https://api.telegram.org/bot"
+    channel_id = bot_cfg.admin_id
+    url += token
+    method = url + "/sendMessage"
+    text = f'Сообщения пришли {i} людям.\nВремя, ушедшее на рассылку - {datetime.now() - start_time}'
+    requests.post(method, data={
+        "chat_id": channel_id,
+        "text": text
+    })
