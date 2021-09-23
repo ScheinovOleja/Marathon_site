@@ -96,5 +96,6 @@ async def successfully(message: types.Message, state: FSMContext):
             setattr(measurement_db, key, data[key])
         except KeyError:
             continue
+    commit()
     await state.set_data({'marathon_id': data['marathon_id']})
     user.measurement = measurement_db.id
