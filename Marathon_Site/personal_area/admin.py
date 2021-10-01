@@ -23,7 +23,7 @@ from .models import *
 class UsersAdmin(admin.ModelAdmin):
     model = Users
     actions = ['import_csv']
-    search_fields = ['username', 'first_name', 'last_name']
+    search_fields = ['username', 'first_name', 'last_name', 'tg_id']
     list_filter = ['sex', 'marathon__name']
     list_display = ['tg_id', 'username', 'first_name', 'last_name', 'marathon']
     fields = ['username', ('first_name', 'last_name'), 'sex', 'scopes', 'marathon', ('get_photo', 'get_measurement',
