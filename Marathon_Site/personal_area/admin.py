@@ -433,6 +433,7 @@ class BotConfigAdmin(admin.ModelAdmin):
 
 class AllUsersAdmin(admin.ModelAdmin):
     list_display = ['tg_id']
+    search_fields = ['tg_id']
 
 
 class MyAdminSite(AdminSite):
