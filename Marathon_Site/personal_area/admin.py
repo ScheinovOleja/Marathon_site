@@ -13,11 +13,13 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, path
 from django.utils.safestring import mark_safe
 
-from .general_func import users_delete, marathon_delete
+from .general_func import users_delete, marathon_delete, task_delete, product_delete, kcal_category_delete, \
+    ready_made_delete
 from .models import *
 
 
 # Register your models here.
+MEDIA_ROOT = Path(__file__).resolve().parent.parent
 
 
 class UsersAdmin(admin.ModelAdmin):
@@ -25,10 +27,10 @@ class UsersAdmin(admin.ModelAdmin):
     actions = ['import_csv']
     search_fields = ['username', 'first_name', 'last_name', 'tg_id']
     list_filter = ['sex', 'marathon__name']
-    list_display = ['tg_id', 'username', 'first_name', 'last_name', 'marathon']
+    list_display = ['tg_id', 'username', 'first_name', 'last_name', 'scopes', 'marathon']
     fields = ['username', ('first_name', 'last_name'), 'sex', 'scopes', 'marathon', ('get_photo', 'get_measurement',
-                                                                                     'get_bzu')]
-    readonly_fields = ['get_photo', 'get_measurement', 'get_bzu', 'marathon', 'sex', 'username']
+                                                                                     'get_bzu'), 'get_codes']
+    readonly_fields = ['get_photo', 'get_measurement', 'get_bzu', 'get_codes', 'marathon', 'sex', 'username']
     list_display_links = ['tg_id', 'marathon']
     list_per_page = 50
     list_max_show_all = 200
@@ -89,6 +91,21 @@ class UsersAdmin(admin.ModelAdmin):
               f'Тык сюды</a></b>'
         return mark_safe(url)
 
+    def get_codes(self, request):
+        text_url = ''
+        for task in request.tasksusers_set.all():
+            text_url += f'<li><b><a href="/admin/personal_area/categorytasks/{task.tasks.category_id}/change/" target="_blank">' \
+                        f'Задание - {task.tasks.name}</a></b></li>\n'
+        for code in request.codesusers_set.all():
+            text_url += f'<li><b><a href="/admin/personal_area/codes/{code.codes.id}/change/" target="_blank">' \
+                        f'Халява - {code.codes.code}</a></b></li>\n'
+        url = f"""
+                        <ul>
+                            {text_url}
+                        </ul>
+                        """
+        return mark_safe(url)
+
     def delete_queryset(self, request, queryset):
         for user in queryset:
             users_delete(user)
@@ -98,6 +115,7 @@ class UsersAdmin(admin.ModelAdmin):
     get_photo.short_description = 'Фотографии пользователя'
     import_csv.short_description = 'Выгрузить в CSV'
     get_bzu.short_description = 'Показатели БЖУ пользователя'
+    get_codes.short_description = 'Введенные коды'
 
 
 class PhotoAdmin(admin.ModelAdmin):
@@ -213,6 +231,8 @@ class TaskInline(admin.StackedInline):
         models.TextField: {'widget': Textarea(attrs={'rows': 6, 'cols': 40})},
     }
     extra = 0
+    verbose_name = 'Задание'
+    verbose_name_plural = 'Задания'
 
     def preview(self, obj):
         url = f'<a href="{obj.image.url}" target="_blank"><img src="{obj.image.url}" style="max-height: 50px;"></a>'
@@ -223,12 +243,24 @@ class TaskInline(admin.StackedInline):
 
 class CategoryTasksInline(admin.StackedInline):
     model = CategoryTasksMarathon
+    can_delete = False
+    verbose_name = 'Марафон'
+    verbose_name_plural = 'Марафон'
 
 
 class CategoryAdmin(admin.ModelAdmin):
     inlines = [CategoryTasksInline, TaskInline]
     list_display = ['category', 'get_marathon']
     list_filter = ['categorytasksmarathon__marathon__name']
+
+    def delete_queryset(self, request, queryset):
+        for category in queryset:
+            task_delete(category)
+            category.delete()
+
+    def delete_model(self, request, obj):
+        task_delete(obj)
+        obj.delete()
 
     def get_marathon(self, obj):
         return obj.categorytasksmarathon.marathon.name
@@ -253,6 +285,13 @@ class ProductsAdmin(admin.ModelAdmin):
     readonly_fields = ['get_photo']
     list_filter = ['marathon']
     list_display = ['name', 'marathon']
+
+    def delete_queryset(self, request, queryset):
+        for product in queryset:
+            product_delete(product)
+
+    def delete_model(self, request, obj):
+        product_delete(obj)
 
     def get_photo(self, obj):
         url = f'<a href="{obj.image.url}" target="_blank"><img src="{obj.image.url}"' \
@@ -308,6 +347,13 @@ class KcalCategoryAdmin(admin.ModelAdmin):
     list_filter = ['kcalcategoryreadymademenumarathon__marathon__name']
     inlines = [KcalCategoryInLine, DayReadyMadeInline]
 
+    def delete_queryset(self, request, queryset):
+        for kcal_category in queryset:
+            kcal_category_delete(kcal_category)
+
+    def delete_model(self, request, obj):
+        kcal_category_delete(obj)
+
     def get_marathon(self, obj):
         return obj.kcalcategoryreadymademenumarathon.marathon.name
 
@@ -334,6 +380,27 @@ class TimeDayReadyMadeMenuAdmin(admin.ModelAdmin):
     readonly_fields = ['get_marathon']
     list_display = ['time_day', 'day', 'get_marathon']
     list_filter = ['day__kcal_category__kcalcategoryreadymademenumarathon__marathon__name']
+
+    def delete_queryset(self, request, queryset):
+        for ready_made in queryset:
+            for menu in ready_made.readymademenu_set.all():
+                try:
+                    command = f'rm -r {MEDIA_ROOT}/media/{menu.photo}'
+                    os.system(command)
+                except (AttributeError, AssertionError):
+                    pass
+                menu.delete()
+            ready_made.delete()
+
+    def delete_model(self, request, obj):
+        for menu in obj.readymademenu_set.all():
+            try:
+                command = f'rm -r {MEDIA_ROOT}/media/{menu.photo}'
+                os.system(command)
+            except (AttributeError, AssertionError):
+                pass
+            menu.delete()
+        obj.delete()
 
     def get_marathon(self, obj):
         return obj.day.kcal_category.kcalcategoryreadymademenumarathon.marathon.name
@@ -363,6 +430,27 @@ class CategoryTrainingMenuAdmin(admin.ModelAdmin):
     list_display = ['category', 'get_marathon']
     inlines = [CategoryTrainingMenuInline, TrainingInfoInline]
     list_filter = ['categorytrainingmenumarathon__marathon__name']
+
+    def delete_queryset(self, request, queryset):
+        for category in queryset:
+            for info in category.traininginfo_set.all():
+                try:
+                    command = f'rm -r {MEDIA_ROOT}/media/{info.photo}'
+                    os.system(command)
+                except (AttributeError, AssertionError):
+                    pass
+                info.delete()
+            category.delete()
+
+    def delete_model(self, request, obj):
+        for info in obj.traininginfo_set.all():
+            try:
+                command = f'rm -r {MEDIA_ROOT}/media/{info.photo}'
+                os.system(command)
+            except (AttributeError, AssertionError):
+                pass
+            info.delete()
+        obj.delete()
 
     def get_marathon(self, obj):
         return obj.categorytrainingmenumarathon.marathon.name
@@ -417,15 +505,18 @@ class BotConfigAdmin(admin.ModelAdmin):
         # Обработка событий кнопок
 
     def start(self, request):
-        start_bot = subprocess.run(["sh", "start.sh"])
+        command = f'systemctl start marathon_bot.service'
+        os.system(command)
         return HttpResponseRedirect(reverse(f'admin:personal_area_botconfig_changelist'))
 
     def stop(self, request):
-        stop_bot = subprocess.run(["sh", "stop.sh"])
+        command = f'systemctl stop marathon_bot.service'
+        os.system(command)
         return HttpResponseRedirect(reverse(f'admin:personal_area_botconfig_changelist'))
 
     def restart(self, request):
-        restart_bot = subprocess.run(["sh", "restart.sh"])
+        command = f'systemctl restart marathon_bot.service'
+        os.system(command)
         return HttpResponseRedirect(reverse(f'admin:personal_area_botconfig_changelist'))
 
     start_bot.short_description = 'Управление'

@@ -22,7 +22,11 @@ async def send_category_tasks(query: types.CallbackQuery, state: FSMContext):
                'инстаграме: instagram.com/vkus_viki'
     else:
         for category in marathon.category_task.order_by(CategoryTasks.id):
-            markup.add(types.InlineKeyboardButton(text=f'{category.category}', callback_data=f'Category_{category.id}'))
+            if category.date_start < datetime.datetime.now(category.date_start.tzinfo) < category.date_stop:
+                markup.add(types.InlineKeyboardButton(text=f'{category.category}', callback_data=f'Category_{category.id}'))
+    if len(markup.inline_keyboard) == 0:
+        text = 'К сожалению, на данный момент нет категорий! Ждите новостей в моём ' \
+               'инстаграме: instagram.com/vkus_viki'
     markup.add(main_menu)
     await TaskMenu.first()
     await query.message.edit_text(text, reply_markup=markup)
@@ -32,6 +36,7 @@ async def send_category_tasks(query: types.CallbackQuery, state: FSMContext):
 async def send_tasks(query: types.CallbackQuery, state: FSMContext):
     markup = types.InlineKeyboardMarkup()
     data = await state.get_data()
+    text = 'Выберите задание:'
     completed_task = await Users.get_user(tg_id=query.from_user.id, marathon_id=data['marathon_id'])
     try:
         all_task = Tasks.select().where(category=data['callback'].split('_')[1]).order_by(Tasks.id)[:]
@@ -45,13 +50,16 @@ async def send_tasks(query: types.CallbackQuery, state: FSMContext):
         else:
             if task.date_start < datetime.datetime.now(task.date_start.tzinfo) < task.date_stop:
                 markup.add(types.InlineKeyboardButton(text=f'{task.name}', callback_data=f'Task_{task.id}'))
+    if len(markup.inline_keyboard) == 0:
+        text = 'К сожалению, на данный момент нет заданий на выполнение! Ждите новостей по новым заданиям в моём ' \
+               'инстаграме: instagram.com/vkus_viki'
     markup.add(back, main_menu)
     await TaskMenu.next()
     try:
-        await query.message.edit_text('Выберите задание:', reply_markup=markup)
+        await query.message.edit_text(text, reply_markup=markup)
     except BadRequest:
         await query.message.delete()
-        await query.message.answer('Выберите задание:', reply_markup=markup)
+        await query.message.answer(text, reply_markup=markup)
 
 
 @db_session

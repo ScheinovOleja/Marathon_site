@@ -15,8 +15,8 @@ from marathon_bot.scenarios import calculate_kcal_handler, register_handlers, me
 
 
 async def register_handler_scenarios(dispatcher):
-    calculate_kcal_handler(dispatcher)
     register_handlers(dispatcher)
+    calculate_kcal_handler(dispatcher)
     measurements_handler(dispatcher)
     photo_handler(dispatcher)
 

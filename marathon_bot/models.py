@@ -53,6 +53,8 @@ class CategoryTasks(db.Entity):
     _table_ = 'category_tasks'
     id = PrimaryKey(int, auto=True)
     category = Required(str, index=True)
+    date_start = Required(datetime.datetime, nullable=False)
+    date_stop = Required(datetime.datetime, nullable=False)
     marathon = Set("Marathon", reverse='category_task', column='marathon_id')
     tasks = Optional('Tasks')
 

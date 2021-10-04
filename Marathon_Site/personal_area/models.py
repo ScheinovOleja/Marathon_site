@@ -1,5 +1,8 @@
+import os
 import random
 import string
+from datetime import datetime
+from pathlib import Path
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -20,10 +23,13 @@ class MyManager(Manager):
 
 class CategoryTasks(models.Model):
     category = models.CharField(max_length=50, verbose_name='Категория задания')
+    date_start = models.DateTimeField(null=False, default=datetime.now().date(), verbose_name='Дата открытия категории')
+    date_stop = models.DateTimeField(null=False, default=datetime.now().date(), verbose_name='Дата закрытия категории')
 
     class Meta:
         db_table = 'category_tasks'
         verbose_name_plural = 'Задания'
+        verbose_name = 'Категории'
 
     def __str__(self):
         return f'{self.category}'
@@ -57,6 +63,12 @@ class Tasks(models.Model):
 
     def __str__(self):
         return f'{self.id} - {self.name}'
+
+    def delete(self, using=None, keep_parents=False):
+        MEDIA_ROOT = Path(__file__).resolve().parent.parent
+        command = f'rm -r {MEDIA_ROOT}/media/{self.image}'
+        os.system(command)
+        super(Tasks, self).delete()
 
 
 class Marathon(models.Model):
@@ -308,6 +320,12 @@ class ReadyMadeMenu(models.Model):
 
     def __str__(self):
         return f'{self.name_menu}'
+
+    def delete(self, using=None, keep_parents=False):
+        MEDIA_ROOT = Path(__file__).resolve().parent.parent
+        command = f'rm -r {MEDIA_ROOT}/media/{self.photo}'
+        os.system(command)
+        super(ReadyMadeMenu, self).delete()
 
 
 class CategoryTrainingMenu(models.Model):

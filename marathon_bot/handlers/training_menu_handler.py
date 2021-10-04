@@ -19,6 +19,9 @@ async def send_category_training(query: types.CallbackQuery, state: FSMContext):
     else:
         for category in marathon.category_training_menu.order_by(CategoryTrainingMenu.id):
             markup.add(types.InlineKeyboardButton(text=f'{category.category}', callback_data=f'Training_{category.id}'))
+    if len(markup.inline_keyboard) == 0:
+        text = 'К сожалению, на данный момент нет готовых меню! Ждите новостей в моём ' \
+               'инстаграме: instagram.com/vkus_viki'
     markup.add(back, main_menu)
     await TrainingMenu.first()
     await query.message.edit_text(text, reply_markup=markup)

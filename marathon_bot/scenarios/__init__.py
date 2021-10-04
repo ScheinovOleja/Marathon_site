@@ -15,19 +15,6 @@ from marathon_bot.states.all_states_menu import CalculationOfKBZUMenu, UserInfoM
 from marathon_bot.states.state_scenarios import CalculateKcal, Register, MeasurementState, Photos
 
 
-def calculate_kcal_handler(dp: Dispatcher):
-    dp.register_callback_query_handler(send_first_scenario_message_calculate_kcal,
-                                       data_kcal_welcome_menu.filter(id=['kcal']),
-                                       state=CalculationOfKBZUMenu.choice_menu)
-    dp.register_message_handler(set_weight_kcal, state=CalculateKcal.set_weight)
-    dp.register_message_handler(set_height, state=CalculateKcal.set_height)
-    dp.register_message_handler(set_age, state=CalculateKcal.set_age)
-    dp.register_callback_query_handler(set_sex, state=CalculateKcal.set_sex)
-    dp.register_callback_query_handler(set_purpose, state=CalculateKcal.choice_purpose)
-    dp.register_callback_query_handler(successfully, data_activity.filter(id=['activity']),
-                                       state=CalculateKcal.choice_activity)
-
-
 def register_handlers(dp: Dispatcher):
     dp.register_message_handler(send_welcome, state="*",
                                 commands=['start'])
@@ -46,6 +33,19 @@ def register_handlers(dp: Dispatcher):
                                 state=[MainMenu, TaskMenu, UserInfoMenu, CalculationOfKBZUMenu, ReadyMadeMenuState,
                                        TrainingMenu, StatsMenu, ProductsMenu,
                                        Register.choice_marathon, Register.check_register])
+
+
+def calculate_kcal_handler(dp: Dispatcher):
+    dp.register_callback_query_handler(send_first_scenario_message_calculate_kcal,
+                                       data_kcal_welcome_menu.filter(id=['kcal']),
+                                       state=CalculationOfKBZUMenu.choice_menu)
+    dp.register_message_handler(set_weight_kcal, state=CalculateKcal.set_weight)
+    dp.register_message_handler(set_height, state=CalculateKcal.set_height)
+    dp.register_message_handler(set_age, state=CalculateKcal.set_age)
+    dp.register_callback_query_handler(set_sex, state=CalculateKcal.set_sex)
+    dp.register_callback_query_handler(set_purpose, state=CalculateKcal.choice_purpose)
+    dp.register_callback_query_handler(successfully, data_activity.filter(id=['activity']),
+                                       state=CalculateKcal.choice_activity)
 
 
 def measurements_handler(dp: Dispatcher):

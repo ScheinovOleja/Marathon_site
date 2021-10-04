@@ -67,3 +67,41 @@ def marathon_delete(marathon):
     for user in marathon.users_set.all():
         users_delete(user)
         user.delete()
+
+
+def task_delete(category):
+    for task in category.tasks_set.all():
+        try:
+            command = f'rm -r {MEDIA_ROOT}/{task.image}'
+            os.system(command)
+        except (AttributeError, AssertionError):
+            pass
+        task.delete()
+
+
+def product_delete(product):
+    try:
+        command = f'rm -r {MEDIA_ROOT}/{product.image}'
+        os.system(command)
+    except (AttributeError, AssertionError):
+        pass
+    product.delete()
+
+
+def kcal_category_delete(kcal_category):
+    for day_menu in kcal_category.dayreadymademenu_set.all():
+        for time_day in day_menu.timedayreadymademenu_set.all():
+            for menu in time_day.readymademenu_set.all():
+                try:
+                    command = f'rm -r {MEDIA_ROOT}/media/{menu.photo}'
+                    os.system(command)
+                except (AttributeError, AssertionError):
+                    pass
+                menu.delete()
+            time_day.delete()
+        day_menu.delete()
+    kcal_category.delete()
+
+
+def ready_made_delete(ready_made):
+    ready_made.delete()
