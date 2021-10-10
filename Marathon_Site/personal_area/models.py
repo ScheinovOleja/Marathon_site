@@ -23,8 +23,8 @@ class MyManager(Manager):
 
 class CategoryTasks(models.Model):
     category = models.CharField(max_length=50, verbose_name='Категория задания')
-    date_start = models.DateTimeField(null=False, default=datetime.now().date(), verbose_name='Дата открытия категории')
-    date_stop = models.DateTimeField(null=False, default=datetime.now().date(), verbose_name='Дата закрытия категории')
+    date_start = models.DateField(null=False, default=datetime.now().date(), verbose_name='Дата открытия категории')
+    date_stop = models.DateField(null=False, default=datetime.now().date(), verbose_name='Дата закрытия категории')
 
     class Meta:
         db_table = 'category_tasks'
